@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="FinanceAI.TransactionDetailPage"
+    BackgroundColor="#F6F7FB">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24,45,24,30" Spacing="18">
+
+            <Label Text="İşlem Detayı" FontSize="24" FontAttributes="Bold" TextColor="#171717" />
+
+            <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="16">
+                <VerticalStackLayout Spacing="10">
+                    <Label x:Name="TypeLabel" Text="Tür: " FontSize="16" />
+                    <Label x:Name="AmountLabel" Text="Tutar: " FontSize="20" FontAttributes="Bold" />
+                    <Label x:Name="CategoryLabel" Text="Kategori: " FontSize="15" />
+                    <Label x:Name="DescriptionLabel" Text="Açıklama: " FontSize="15" />
+                    <Label x:Name="DateLabel" Text="Tarih: " FontSize="13" TextColor="#666666" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Button x:Name="DeleteButton" Text="İşlemi Sil" BackgroundColor="#C62828" TextColor="White" CornerRadius="12" HeightRequest="50" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

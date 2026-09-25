@@ -1,0 +1,111 @@
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="FinanceAI.Pages.DashboardPage"
+    BackgroundColor="#F6F7FB">
+
+    <ContentPage.Content>
+        <ScrollView>
+            <VerticalStackLayout Padding="16,24" Spacing="16">
+
+                <Label Text="Dashboard" FontSize="24" FontAttributes="Bold" TextColor="#171717" />
+
+                <Button x:Name="ReportsButton" Text="Finansal Raporlar" Clicked="ReportsButton_Clicked" BackgroundColor="#1976D2" TextColor="White" CornerRadius="8" HeightRequest="40" />
+                <Button x:Name="BudgetsNavButton" Text="Bütçeler" Clicked="BudgetsNavButton_Clicked" BackgroundColor="#29B6F6" TextColor="White" CornerRadius="8" HeightRequest="40" />
+
+                <!-- Summary cards -->
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+                    <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="12">
+                        <VerticalStackLayout>
+                            <Label Text="Toplam Bakiye" FontSize="12" TextColor="#666666" />
+                            <Label x:Name="TotalBalanceLabel" Text="₺0.00" FontSize="20" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="12">
+                        <VerticalStackLayout>
+                            <Label Text="Bu Ay Gelir" FontSize="12" TextColor="#666666" />
+                            <Label x:Name="ThisMonthIncomeLabel" Text="₺0.00" FontSize="20" FontAttributes="Bold" TextColor="#2E7D32" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="12">
+                        <VerticalStackLayout>
+                            <Label Text="Bu Ay Gider" FontSize="12" TextColor="#666666" />
+                            <Label x:Name="ThisMonthExpenseLabel" Text="₺0.00" FontSize="20" FontAttributes="Bold" TextColor="#C62828" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="12">
+                        <VerticalStackLayout>
+                            <Label Text="Tasarruf" FontSize="12" TextColor="#666666" />
+                            <Label x:Name="SavingsLabel" Text="₺0.00 (0%)" FontSize="16" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- Chart area -->
+                <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="12">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Son 6 Ay Gelir / Gider" FontSize="14" FontAttributes="Bold" />
+                        <GraphicsView x:Name="ChartView" HeightRequest="180" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Category distribution and top categories -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="12">
+                        <VerticalStackLayout>
+                            <Label Text="Kategori Dağılımı (Bu Ay Gider)" FontSize="14" FontAttributes="Bold" />
+                            <StackLayout x:Name="CategoryDistributionLayout" Spacing="8" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="12">
+                        <VerticalStackLayout>
+                            <Label Text="En Çok Harcama Yapılan 3 Kategori" FontSize="14" FontAttributes="Bold" />
+                            <StackLayout x:Name="TopCategoriesLayout" Spacing="8" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- Comparison -->
+                <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="12">
+                    <VerticalStackLayout>
+                        <Label Text="Aylık Değişim" FontSize="14" FontAttributes="Bold" />
+                        <Label x:Name="MonthlyChangeLabel" Text="-" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Financial Goals summary -->
+                <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="12">
+                    <VerticalStackLayout>
+                        <Label Text="Finansal Hedefler" FontSize="14" FontAttributes="Bold" />
+                        <Label x:Name="GoalsSummaryLabel" Text="-" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Debug: add sample data -->
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <Button x:Name="AddSampleButton"
+                            Grid.Column="0"
+                            Text="Sahte Veri Ekle"
+                            BackgroundColor="#1976D2"
+                            TextColor="White"
+                            CornerRadius="10"
+                            HeightRequest="44" />
+
+                    <Button x:Name="ClearSampleButton"
+                            Grid.Column="1"
+                            Text="Sahte Verileri Sil"
+                            BackgroundColor="#E53935"
+                            TextColor="White"
+                            CornerRadius="10"
+                            HeightRequest="44" />
+                </Grid>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </ContentPage.Content>
+
+</ContentPage>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="FinanceAI.TransactionsPage"
+    BackgroundColor="#F6F7FB">
+
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="24,45,24,30"
+            Spacing="18">
+
+            <!-- HEADER -->
+            <Grid ColumnDefinitions="Auto,*">
+
+                <Button
+                    Grid.Column="0"
+                    Text="‹"
+                    FontSize="32"
+                    BackgroundColor="Transparent"
+                    TextColor="#171717"
+                    WidthRequest="45"
+                    HeightRequest="45"
+                    Padding="0"
+                    Clicked="BackButton_Clicked" />
+
+                <Label
+                    Grid.Column="1"
+                    Text="İşlem Geçmişi"
+                    FontSize="27"
+                    FontAttributes="Bold"
+                    TextColor="#171717"
+                    VerticalOptions="Center" />
+
+            </Grid>
+
+            <!-- SEARCH -->
+            <Border
+                BackgroundColor="White"
+                StrokeThickness="1"
+                Stroke="#E5E5E5"
+                StrokeShape="RoundRectangle 16"
+                Padding="14,0">
+
+                <Entry
+                    x:Name="SearchEntry"
+                    Placeholder="🔍  İşlem ara..."
+                    PlaceholderColor="#999999"
+                    TextColor="#171717"
+                    FontSize="15"
+                    TextChanged="SearchEntry_TextChanged" />
+
+            </Border>
+
+            <!-- FILTERS -->
+            <Grid
+                ColumnDefinitions="*,*,*"
+                ColumnSpacing="8">
+
+                <Button
+                    x:Name="AllButton"
+                    Grid.Column="0"
+                    Text="Tümü"
+                    BackgroundColor="#171717"
+                    TextColor="White"
+                    CornerRadius="14"
+                    HeightRequest="45"
+                    Clicked="AllButton_Clicked" />
+
+                <Button
+                    x:Name="IncomeButton"
+                    Grid.Column="1"
+                    Text="Gelir"
+                    BackgroundColor="White"
+                    TextColor="#171717"
+                    CornerRadius="14"
+                    HeightRequest="45"
+                    Clicked="IncomeButton_Clicked" />
+
+                <Button
+                    x:Name="ExpenseButton"
+                    Grid.Column="2"
+                    Text="Gider"
+                    BackgroundColor="White"
+                    TextColor="#171717"
+                    CornerRadius="14"
+                    HeightRequest="45"
+                    Clicked="ExpenseButton_Clicked" />
+
+            </Grid>
+
+            <!-- TRANSACTIONS -->
+            <VerticalStackLayout
+                x:Name="TransactionsLayout"
+                Spacing="10" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

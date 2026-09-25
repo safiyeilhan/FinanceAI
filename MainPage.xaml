@@ -1,0 +1,192 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="FinanceAI.MainPage"
+    BackgroundColor="#F6F7FB">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Dashboard" Clicked="Dashboard_Clicked" />
+        <ToolbarItem Text="Asistan" Clicked="Assistant_Clicked" />
+    </ContentPage.ToolbarItems>
+
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="24,45,24,30"
+            Spacing="20">
+
+            <!-- BAŞLIK -->
+            <VerticalStackLayout Spacing="4">
+                <Label
+                    Text="FinanceAI"
+                    FontSize="30"
+                    FontAttributes="Bold"
+                    TextColor="#171717" />
+
+                <Label
+                    Text="Finansal durumunuzu takip edin"
+                    FontSize="14"
+                    TextColor="#888888" />
+            </VerticalStackLayout>
+
+
+            <!-- BAKİYE KARTI -->
+            <Border
+                BackgroundColor="#171717"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 22"
+                Padding="22">
+
+                <VerticalStackLayout Spacing="8">
+
+                    <Label
+                        Text="Toplam Bakiye"
+                        FontSize="14"
+                        TextColor="#BBBBBB" />
+
+                    <Label
+                        x:Name="TotalBalanceLabel"
+                        Text="₺0,00"
+                        FontSize="34"
+                        FontAttributes="Bold"
+                        TextColor="White" />
+
+                    <Label
+                        Text="Gelir - Gider"
+                        FontSize="12"
+                        TextColor="#888888" />
+
+                </VerticalStackLayout>
+            </Border>
+
+
+            <!-- GELİR / GİDER -->
+            <Grid
+                ColumnDefinitions="*,*"
+                ColumnSpacing="12">
+
+                <!-- GELİR -->
+                <Border
+                    Grid.Column="0"
+                    BackgroundColor="White"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 18"
+                    Padding="16">
+
+                    <VerticalStackLayout Spacing="6">
+
+                        <Label
+                            Text="Toplam Gelir"
+                            FontSize="13"
+                            TextColor="#888888" />
+
+                        <Label
+                            x:Name="IncomeLabel"
+                            Text="₺0,00"
+                            FontSize="21"
+                            FontAttributes="Bold"
+                            TextColor="#171717" />
+
+                    </VerticalStackLayout>
+                </Border>
+
+
+                <!-- GİDER -->
+                <Border
+                    Grid.Column="1"
+                    BackgroundColor="White"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 18"
+                    Padding="16">
+
+                    <VerticalStackLayout Spacing="6">
+
+                        <Label
+                            Text="Toplam Gider"
+                            FontSize="13"
+                            TextColor="#888888" />
+
+                        <Label
+                            x:Name="ExpenseLabel"
+                            Text="₺0,00"
+                            FontSize="21"
+                            FontAttributes="Bold"
+                            TextColor="#171717" />
+
+                    </VerticalStackLayout>
+                </Border>
+
+            </Grid>
+
+
+            <!-- İŞLEM EKLE BUTONLARI -->
+            <Grid
+                ColumnDefinitions="*,*"
+                ColumnSpacing="12">
+
+                <Button
+                    Grid.Column="0"
+                    Text="+ Gelir Ekle"
+                    BackgroundColor="#171717"
+                    TextColor="White"
+                    FontSize="14"
+                    FontAttributes="Bold"
+                    CornerRadius="14"
+                    HeightRequest="52"
+                    Clicked="AddIncome_Clicked" />
+
+                <Button
+                    Grid.Column="1"
+                    Text="+ Gider Ekle"
+                    BackgroundColor="White"
+                    TextColor="#171717"
+                    FontSize="14"
+                    FontAttributes="Bold"
+                    CornerRadius="14"
+                    HeightRequest="52"
+                    Clicked="AddExpense_Clicked" />
+
+            </Grid>
+
+
+            <!-- SON İŞLEMLER -->
+            <VerticalStackLayout Spacing="12">
+
+                <Grid ColumnDefinitions="*,Auto">
+
+                    <Label
+                        Grid.Column="0"
+                        Text="Son İşlemler"
+                        FontSize="20"
+                        FontAttributes="Bold"
+                        TextColor="#171717" />
+
+                    <Label
+                        Grid.Column="1"
+                        Text="Tümü"
+                        FontSize="14"
+                        TextColor="#777777"
+                        VerticalOptions="Center">
+
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Tapped="AllTransactions_Tapped" />
+                        </Label.GestureRecognizers>
+
+                    </Label>
+
+                </Grid>
+
+
+                <!-- İŞLEMLER BURAYA GELECEK -->
+                <VerticalStackLayout
+                    x:Name="TransactionsLayout"
+                    Spacing="10" />
+
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
