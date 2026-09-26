@@ -2,19 +2,21 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:h="clr-namespace:FinanceAI.Helpers"
     x:Class="FinanceAI.TransactionsPage"
     BackgroundColor="{StaticResource AppBackground}">
 
     <ScrollView>
         <VerticalStackLayout Padding="24,22,24,28" Spacing="14">
 
-            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
                 <VerticalStackLayout Spacing="2" VerticalOptions="Center">
                     <Label Text="İşlemler" FontSize="26" FontAttributes="Bold" TextColor="{StaticResource AppInk}" />
                     <Label x:Name="CountLabel" Text="Kayıt yok" FontSize="13" TextColor="{StaticResource AppMuted}" />
                 </VerticalStackLayout>
-                <Button Grid.Column="1" Text="Gelir ekle" BackgroundColor="{StaticResource AppAccent}" TextColor="White" FontAttributes="Bold" CornerRadius="12" HeightRequest="40" Padding="14,0" Clicked="AddIncome_Clicked" />
-                <Button Grid.Column="2" Text="Gider ekle" BackgroundColor="White" TextColor="{StaticResource AppExpense}" BorderColor="#F0D4D4" BorderWidth="1" FontAttributes="Bold" CornerRadius="12" HeightRequest="40" Padding="14,0" Clicked="AddExpense_Clicked" />
+                <Button Grid.Column="1" Text="Yenile" ImageSource="{h:AppIcon Glyph=&#xE72C;, Tint=#0E7C66}" ContentLayout="Left, 8" BackgroundColor="White" TextColor="{StaticResource AppAccent}" BorderColor="{StaticResource AppLine}" BorderWidth="1" FontAttributes="Bold" CornerRadius="12" HeightRequest="40" Padding="14,0" VerticalOptions="Center" Clicked="RefreshButton_Clicked" />
+                <Button Grid.Column="2" Text="Gelir ekle" ImageSource="{h:AppIcon Glyph=&#xE74A;, Tint=#FFFFFF}" ContentLayout="Left, 8" BackgroundColor="{StaticResource AppAccent}" TextColor="White" FontAttributes="Bold" CornerRadius="12" HeightRequest="40" Padding="14,0" Clicked="AddIncome_Clicked" />
+                <Button Grid.Column="3" Text="Gider ekle" ImageSource="{h:AppIcon Glyph=&#xE74B;, Tint=#D14343}" ContentLayout="Left, 8" BackgroundColor="White" TextColor="{StaticResource AppExpense}" BorderColor="#F0D4D4" BorderWidth="1" FontAttributes="Bold" CornerRadius="12" HeightRequest="40" Padding="14,0" Clicked="AddExpense_Clicked" />
             </Grid>
 
             <VerticalStackLayout x:Name="NoticeHost" Spacing="8" />
@@ -30,9 +32,9 @@
                         BackgroundColor="Transparent"
                         TextChanged="SearchEntry_TextChanged" />
                 </Border>
-                <Button x:Name="AllButton" Grid.Column="1" Text="Tümü" BackgroundColor="{StaticResource AppAccent}" TextColor="White" FontAttributes="Bold" CornerRadius="12" HeightRequest="44" WidthRequest="88" Clicked="AllButton_Clicked" />
-                <Button x:Name="IncomeButton" Grid.Column="2" Text="Gelir" BackgroundColor="White" TextColor="{StaticResource AppInk}" CornerRadius="12" HeightRequest="44" WidthRequest="88" Clicked="IncomeButton_Clicked" />
-                <Button x:Name="ExpenseButton" Grid.Column="3" Text="Gider" BackgroundColor="White" TextColor="{StaticResource AppInk}" CornerRadius="12" HeightRequest="44" WidthRequest="88" Clicked="ExpenseButton_Clicked" />
+                <Button x:Name="AllButton" Grid.Column="1" Text="Tümü" ImageSource="{h:AppIcon Glyph=&#xE8FD;, Tint=#FFFFFF}" ContentLayout="Left, 6" BackgroundColor="{StaticResource AppAccent}" TextColor="White" FontAttributes="Bold" CornerRadius="12" HeightRequest="44" Padding="14,0" Clicked="AllButton_Clicked" />
+                <Button x:Name="IncomeButton" Grid.Column="2" Text="Gelir" ImageSource="{h:AppIcon Glyph=&#xE74A;, Tint=#10231C}" ContentLayout="Left, 6" BackgroundColor="White" TextColor="{StaticResource AppInk}" CornerRadius="12" HeightRequest="44" Padding="14,0" Clicked="IncomeButton_Clicked" />
+                <Button x:Name="ExpenseButton" Grid.Column="3" Text="Gider" ImageSource="{h:AppIcon Glyph=&#xE74B;, Tint=#10231C}" ContentLayout="Left, 6" BackgroundColor="White" TextColor="{StaticResource AppInk}" CornerRadius="12" HeightRequest="44" Padding="14,0" Clicked="ExpenseButton_Clicked" />
             </Grid>
 
             <VerticalStackLayout x:Name="TransactionsLayout" />

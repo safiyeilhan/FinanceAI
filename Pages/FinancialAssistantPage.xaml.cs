@@ -13,15 +13,38 @@ public partial class FinancialAssistantPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        App.TransactionsChanged -= OnTransactionsChanged;
+        App.TransactionsChanged += OnTransactionsChanged;
         await LoadMetricsAsync();
     }
 
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        App.TransactionsChanged -= OnTransactionsChanged;
+    }
+
+    private void OnTransactionsChanged()
+    {
+        if (Handler is null)
+            return;
+
+        _ = LoadMetricsAsync();
+    }
+
+    private async void RefreshButton_Clicked(object? sender, EventArgs e) => await LoadMetricsAsync();
+
+    private int _loadTicket;
+
     private async Task LoadMetricsAsync()
     {
+        int ticket = Interlocked.Increment(ref _loadTicket);
         try
         {
             var transactions = await App.Database.GetTransactionsAsync();
             var budgets = await App.Database.GetBudgetsAsync();
+            if (ticket != _loadTicket)
+                return;
             var now = DateTime.Now;
 
             var thisMonth = transactions

@@ -1,16 +1,20 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:h="clr-namespace:FinanceAI.Helpers"
     x:Class="FinanceAI.Pages.FinancialGoalsPage"
     BackgroundColor="{StaticResource AppBackground}">
 
     <ScrollView>
         <VerticalStackLayout Padding="24,22,24,28" Spacing="14">
 
-            <VerticalStackLayout Spacing="2">
-                <Label Text="Hedefler" FontSize="26" FontAttributes="Bold" TextColor="{StaticResource AppInk}" />
-                <Label Text="Tablodaki Düzenle ile adı, tutarı, birikeni ve tarihi güncelle." FontSize="13" TextColor="{StaticResource AppMuted}" />
-            </VerticalStackLayout>
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                    <Label Text="Hedefler" FontSize="26" FontAttributes="Bold" TextColor="{StaticResource AppInk}" />
+                    <Label Text="Tablodaki Düzenle ile adı, tutarı, birikeni ve tarihi güncelle." FontSize="13" TextColor="{StaticResource AppMuted}" />
+                </VerticalStackLayout>
+                <Button Grid.Column="1" Text="Yenile" ImageSource="{h:AppIcon Glyph=&#xE72C;, Tint=#0E7C66}" ContentLayout="Left, 8" BackgroundColor="White" TextColor="{StaticResource AppAccent}" BorderColor="{StaticResource AppLine}" BorderWidth="1" FontAttributes="Bold" CornerRadius="12" HeightRequest="40" Padding="16,0" VerticalOptions="Center" Clicked="RefreshButton_Clicked" />
+            </Grid>
 
             <Border BackgroundColor="White" Stroke="{StaticResource AppLine}" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="14">
                 <VerticalStackLayout Spacing="10">
@@ -34,8 +38,8 @@
                         <Border BackgroundColor="{StaticResource AppBackground}" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="10,0">
                             <Entry x:Name="GoalNoteEditor" Placeholder="Kısa not (isteğe bağlı)" PlaceholderColor="#A3B5AE" TextColor="{StaticResource AppInk}" BackgroundColor="Transparent" />
                         </Border>
-                        <Button x:Name="SaveGoalButton" Grid.Column="1" Text="Hedef oluştur" BackgroundColor="{StaticResource AppAccent}" TextColor="White" FontAttributes="Bold" CornerRadius="12" HeightRequest="44" Padding="16,0" Clicked="AddGoalButton_Clicked" />
-                        <Button x:Name="CancelGoalButton" Grid.Column="2" Text="Vazgeç" IsVisible="False" BackgroundColor="White" TextColor="{StaticResource AppInk}" BorderColor="{StaticResource AppLine}" BorderWidth="1" CornerRadius="12" HeightRequest="44" Padding="16,0" Clicked="CancelGoalButton_Clicked" />
+                        <Button x:Name="SaveGoalButton" Grid.Column="1" Text="Hedef oluştur" ImageSource="{h:AppIcon Glyph=&#xE710;, Tint=#FFFFFF}" ContentLayout="Left, 8" BackgroundColor="{StaticResource AppAccent}" TextColor="White" FontAttributes="Bold" CornerRadius="12" HeightRequest="44" Padding="16,0" Clicked="AddGoalButton_Clicked" />
+                        <Button x:Name="CancelGoalButton" Grid.Column="2" Text="Vazgeç" ImageSource="{h:AppIcon Glyph=&#xE711;, Tint=#10231C}" ContentLayout="Left, 6" IsVisible="False" BackgroundColor="White" TextColor="{StaticResource AppInk}" BorderColor="{StaticResource AppLine}" BorderWidth="1" CornerRadius="12" HeightRequest="44" Padding="16,0" Clicked="CancelGoalButton_Clicked" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>

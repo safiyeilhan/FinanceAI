@@ -10,35 +10,35 @@ public partial class MainPage : ContentPage
     {
         InitializeComponent();
         DateLabel.Text = DateTime.Now.ToString("d MMMM yyyy", FinanceFormat.Culture);
+        App.TransactionsChanged += OnTransactionsChanged;
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        App.TransactionsChanged -= OnTransactionsChanged;
-        App.TransactionsChanged += OnTransactionsChanged;
         await LoadFinancialData();
     }
 
-    protected override void OnDisappearing()
+    private void OnTransactionsChanged()
     {
-        base.OnDisappearing();
-        App.TransactionsChanged -= OnTransactionsChanged;
-    }
-
-    private async void OnTransactionsChanged()
-    {
-        if (!IsLoaded)
+        if (Handler is null)
             return;
 
-        await LoadFinancialData();
+        _ = LoadFinancialData();
     }
+
+    private async void RefreshButton_Clicked(object? sender, EventArgs e) => await LoadFinancialData();
+
+    private int _loadTicket;
 
     private async Task LoadFinancialData()
     {
+        int ticket = Interlocked.Increment(ref _loadTicket);
         try
         {
             List<Transaction> transactions = await App.Database.GetTransactionsAsync();
+            if (ticket != _loadTicket)
+                return;
 
             decimal totalIncome = transactions.Where(x => x.IsIncome).Sum(x => x.Amount);
             decimal totalExpense = transactions.Where(x => !x.IsIncome).Sum(x => x.Amount);
@@ -132,7 +132,7 @@ public partial class MainPage : ContentPage
         await Navigation.PushAsync(new AddTransactionPage(isIncome: false));
     }
 
-    private async void AllTransactions_Tapped(object? sender, TappedEventArgs e)
+    private async void AllTransactions_Clicked(object? sender, EventArgs e)
     {
         await Shell.Current.GoToAsync("//transactions");
     }

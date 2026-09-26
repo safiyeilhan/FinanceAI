@@ -12,6 +12,7 @@ public partial class FinancialGoalsPage : ContentPage
         InitializeComponent();
         GoalDatePicker.MinimumDate = new DateTime(2000, 1, 1);
         GoalDatePicker.Date = DateTime.Today.AddMonths(3);
+        App.TransactionsChanged += OnTransactionsChanged;
     }
 
     protected override async void OnAppearing()
@@ -20,11 +21,26 @@ public partial class FinancialGoalsPage : ContentPage
         await LoadGoalsAsync();
     }
 
+    private void OnTransactionsChanged()
+    {
+        if (Handler is null)
+            return;
+
+        _ = LoadGoalsAsync();
+    }
+
+    private async void RefreshButton_Clicked(object? sender, EventArgs e) => await LoadGoalsAsync();
+
+    private int _loadTicket;
+
     private async Task LoadGoalsAsync()
     {
+        int ticket = Interlocked.Increment(ref _loadTicket);
         try
         {
             var goals = await App.Database.GetGoalsAsync();
+            if (ticket != _loadTicket)
+                return;
             var rows = new List<IReadOnlyList<View>>();
 
             foreach (var goal in goals)
@@ -67,6 +83,7 @@ public partial class FinancialGoalsPage : ContentPage
         _editing = goal;
         FormTitleLabel.Text = $"{goal.Name} hedefini güncelle";
         SaveGoalButton.Text = "Değişiklikleri kaydet";
+        AppIcons.Apply(SaveGoalButton, Glyph.Save, Colors.White);
         CancelGoalButton.IsVisible = true;
         GoalNameEntry.Text = goal.Name;
         GoalTargetEntry.Text = goal.TargetAmount.ToString("0.##", FinanceFormat.Culture);
@@ -84,6 +101,7 @@ public partial class FinancialGoalsPage : ContentPage
         _editing = null;
         FormTitleLabel.Text = "Yeni hedef";
         SaveGoalButton.Text = "Hedef oluştur";
+        AppIcons.Apply(SaveGoalButton, Glyph.Add, Colors.White);
         CancelGoalButton.IsVisible = false;
         GoalNameEntry.Text = "";
         GoalTargetEntry.Text = "";
@@ -109,6 +127,7 @@ public partial class FinancialGoalsPage : ContentPage
             ClearForm();
 
         await LoadGoalsAsync();
+        App.RaiseTransactionsChanged();
     }
 
     private async void AddGoalButton_Clicked(object? sender, EventArgs e)
@@ -176,5 +195,6 @@ public partial class FinancialGoalsPage : ContentPage
 
         ClearForm();
         await LoadGoalsAsync();
+        App.RaiseTransactionsChanged();
     }
 }

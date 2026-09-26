@@ -11,35 +11,37 @@ public partial class TransactionsPage : ContentPage
     public TransactionsPage()
     {
         InitializeComponent();
+        App.TransactionsChanged += OnTransactionsChanged;
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        App.TransactionsChanged -= OnTransactionsChanged;
-        App.TransactionsChanged += OnTransactionsChanged;
         await ReloadAsync();
     }
 
-    protected override void OnDisappearing()
+    private void OnTransactionsChanged()
     {
-        base.OnDisappearing();
-        App.TransactionsChanged -= OnTransactionsChanged;
-    }
-
-    private async void OnTransactionsChanged()
-    {
-        if (!IsLoaded)
+        if (Handler is null)
             return;
 
-        await ReloadAsync();
+        _ = ReloadAsync();
     }
+
+    private async void RefreshButton_Clicked(object? sender, EventArgs e) => await ReloadAsync();
+
+    private int _loadTicket;
 
     private async Task ReloadAsync()
     {
+        int ticket = Interlocked.Increment(ref _loadTicket);
         try
         {
-            _allTransactions = await App.Database.GetTransactionsAsync();
+            var transactions = await App.Database.GetTransactionsAsync();
+            if (ticket != _loadTicket)
+                return;
+
+            _allTransactions = transactions;
             ShowTransactions();
         }
         catch
@@ -136,14 +138,16 @@ public partial class TransactionsPage : ContentPage
 
     private void SetActiveButton(Button activeButton)
     {
-        foreach (var button in new[] { AllButton, IncomeButton, ExpenseButton })
-        {
-            button.BackgroundColor = Colors.White;
-            button.TextColor = Palette.Ink;
-        }
+        StyleFilter(AllButton, activeButton == AllButton, Glyph.List, Palette.Ink);
+        StyleFilter(IncomeButton, activeButton == IncomeButton, Glyph.Up, Palette.Income);
+        StyleFilter(ExpenseButton, activeButton == ExpenseButton, Glyph.Down, Palette.Expense);
+    }
 
-        activeButton.BackgroundColor = Palette.Accent;
-        activeButton.TextColor = Colors.White;
+    private static void StyleFilter(Button button, bool active, string glyph, Color idle)
+    {
+        button.BackgroundColor = active ? Palette.Accent : Colors.White;
+        button.TextColor = active ? Colors.White : idle;
+        AppIcons.Apply(button, glyph, active ? Colors.White : idle);
     }
 
     private void SearchEntry_TextChanged(object? sender, TextChangedEventArgs e)

@@ -38,8 +38,10 @@ public partial class TransactionDetailPage : ContentPage
         Notices.SetInline(ErrorLabel, null);
         IncomeButton.BackgroundColor = _isIncome ? Palette.Accent : Colors.White;
         IncomeButton.TextColor = _isIncome ? Colors.White : Palette.Ink;
+        AppIcons.Apply(IncomeButton, Glyph.Up, _isIncome ? Colors.White : Palette.Income);
         ExpenseButton.BackgroundColor = _isIncome ? Colors.White : Palette.Expense;
         ExpenseButton.TextColor = _isIncome ? Palette.Ink : Colors.White;
+        AppIcons.Apply(ExpenseButton, Glyph.Down, _isIncome ? Palette.Expense : Colors.White);
 
         CategoryPicker.Items.Clear();
         foreach (string category in Categories.For(_isIncome))

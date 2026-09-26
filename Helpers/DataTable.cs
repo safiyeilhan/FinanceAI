@@ -76,12 +76,12 @@ public static class DataTable
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center
         };
-        row.Add(ActionChip("Düzenle", Palette.Accent, Color.FromArgb("#E5F4EF"), onEdit));
-        row.Add(ActionChip("Sil", Palette.Expense, Color.FromArgb("#FDECEC"), onDelete));
+        row.Add(ActionChip("Düzenle", Glyph.Edit, Palette.Accent, Color.FromArgb("#E5F4EF"), onEdit));
+        row.Add(ActionChip("Sil", Glyph.Delete, Palette.Expense, Color.FromArgb("#FDECEC"), onDelete));
         return row;
     }
 
-    private static View ActionChip(string text, Color color, Color background, Func<Task> action)
+    private static View ActionChip(string text, string glyph, Color color, Color background, Func<Task> action)
     {
         var chip = new Border
         {
@@ -89,13 +89,27 @@ public static class DataTable
             StrokeThickness = 0,
             StrokeShape = new RoundRectangle { CornerRadius = 10 },
             Padding = new Thickness(10, 6),
-            Content = new Label
+            Content = new HorizontalStackLayout
             {
-                Text = text,
-                TextColor = color,
-                FontSize = 12,
-                FontAttributes = FontAttributes.Bold,
-                VerticalOptions = LayoutOptions.Center
+                Spacing = 4,
+                Children =
+                {
+                    new Image
+                    {
+                        Source = AppIcons.File(glyph, color),
+                        WidthRequest = 14,
+                        HeightRequest = 14,
+                        VerticalOptions = LayoutOptions.Center
+                    },
+                    new Label
+                    {
+                        Text = text,
+                        TextColor = color,
+                        FontSize = 12,
+                        FontAttributes = FontAttributes.Bold,
+                        VerticalOptions = LayoutOptions.Center
+                    }
+                }
             }
         };
         var tap = new TapGestureRecognizer();

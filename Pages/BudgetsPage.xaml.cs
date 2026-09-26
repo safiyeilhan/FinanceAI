@@ -12,36 +12,36 @@ public partial class BudgetsPage : ContentPage
         InitializeComponent();
         foreach (string category in Categories.Expense)
             CategoryPicker.Items.Add(category);
+        App.TransactionsChanged += OnTransactionsChanged;
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        App.TransactionsChanged -= OnTransactionsChanged;
-        App.TransactionsChanged += OnTransactionsChanged;
         await RefreshAsync();
     }
 
-    protected override void OnDisappearing()
+    private void OnTransactionsChanged()
     {
-        base.OnDisappearing();
-        App.TransactionsChanged -= OnTransactionsChanged;
-    }
-
-    private async void OnTransactionsChanged()
-    {
-        if (!IsLoaded)
+        if (Handler is null)
             return;
 
-        await RefreshAsync();
+        _ = RefreshAsync();
     }
+
+    private async void RefreshButton_Clicked(object? sender, EventArgs e) => await RefreshAsync();
+
+    private int _loadTicket;
 
     private async Task RefreshAsync()
     {
+        int ticket = Interlocked.Increment(ref _loadTicket);
         try
         {
             var budgets = await App.Database.GetBudgetsAsync();
             var transactions = await App.Database.GetTransactionsAsync();
+            if (ticket != _loadTicket)
+                return;
 
             int exceeded = 0;
             double highestUsage = 0;
@@ -116,6 +116,7 @@ public partial class BudgetsPage : ContentPage
         _editing = budget;
         FormTitleLabel.Text = $"{budget.Category} bütçesini güncelle";
         AddBudgetButton.Text = "Kaydet";
+        AppIcons.Apply(AddBudgetButton, Glyph.Save, Colors.White);
         CancelBudgetButton.IsVisible = true;
         CustomCategoryEntry.Text = budget.Category;
         LimitEntry.Text = budget.MonthlyLimit.ToString("0.##", FinanceFormat.Culture);
@@ -130,6 +131,7 @@ public partial class BudgetsPage : ContentPage
         _editing = null;
         FormTitleLabel.Text = "Yeni bütçe";
         AddBudgetButton.Text = "Ekle";
+        AppIcons.Apply(AddBudgetButton, Glyph.Add, Colors.White);
         CancelBudgetButton.IsVisible = false;
         CustomCategoryEntry.Text = "";
         LimitEntry.Text = "";
@@ -158,6 +160,7 @@ public partial class BudgetsPage : ContentPage
             ClearForm();
 
         await RefreshAsync();
+        App.RaiseTransactionsChanged();
     }
 
     private async void AddBudgetButton_Clicked(object? sender, EventArgs e)
@@ -191,6 +194,7 @@ public partial class BudgetsPage : ContentPage
 
             ClearForm();
             await RefreshAsync();
+            App.RaiseTransactionsChanged();
             return;
         }
 
@@ -229,5 +233,6 @@ public partial class BudgetsPage : ContentPage
 
         ClearForm();
         await RefreshAsync();
+        App.RaiseTransactionsChanged();
     }
 }

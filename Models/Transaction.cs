@@ -16,4 +16,7 @@ public class Transaction
     public string Description { get; set; } = string.Empty;
 
     public DateTime Date { get; set; }
+
+    // Eski "Sahte Veri Ekle" düğmesinin bıraktığı satırlar. Yeni kayıtlar false kalır.
+    public bool IsSample { get; set; }
 }

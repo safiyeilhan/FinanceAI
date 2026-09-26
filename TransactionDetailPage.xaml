@@ -2,6 +2,7 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:h="clr-namespace:FinanceAI.Helpers"
     x:Class="FinanceAI.TransactionDetailPage"
     Title="İşlem detayı"
     BackgroundColor="{StaticResource AppBackground}"
@@ -19,6 +20,8 @@
                     <Button
                         x:Name="IncomeButton"
                         Text="Gelir"
+                        ImageSource="{h:AppIcon Glyph=&#xE74A;, Tint=#FFFFFF}"
+                        ContentLayout="Left, 8"
                         FontAttributes="Bold"
                         CornerRadius="14"
                         HeightRequest="46"
@@ -27,6 +30,8 @@
                         x:Name="ExpenseButton"
                         Grid.Column="1"
                         Text="Gider"
+                        ImageSource="{h:AppIcon Glyph=&#xE74B;, Tint=#10231C}"
+                        ContentLayout="Left, 8"
                         FontAttributes="Bold"
                         CornerRadius="14"
                         HeightRequest="46"
@@ -83,6 +88,8 @@
             <Button
                 x:Name="SaveButton"
                 Text="Değişiklikleri kaydet"
+                ImageSource="{h:AppIcon Glyph=&#xE74E;, Tint=#FFFFFF}"
+                ContentLayout="Left, 8"
                 BackgroundColor="{StaticResource AppInk}"
                 TextColor="White"
                 FontAttributes="Bold"
@@ -93,6 +100,8 @@
             <Button
                 x:Name="DeleteButton"
                 Text="İşlemi sil"
+                ImageSource="{h:AppIcon Glyph=&#xE74D;, Tint=#D14343}"
+                ContentLayout="Left, 8"
                 BackgroundColor="White"
                 TextColor="{StaticResource AppExpense}"
                 BorderColor="#F0D4D4"

@@ -12,29 +12,24 @@ public partial class DashboardPage : ContentPage
     {
         InitializeComponent();
         ChartView.Drawable = _chart;
+        App.TransactionsChanged += OnTransactionsChanged;
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        App.TransactionsChanged -= OnTransactionsChanged;
-        App.TransactionsChanged += OnTransactionsChanged;
         await RefreshDataAsync();
-    }
-
-    protected override void OnDisappearing()
-    {
-        base.OnDisappearing();
-        App.TransactionsChanged -= OnTransactionsChanged;
     }
 
     private void OnTransactionsChanged()
     {
-        if (!IsLoaded)
+        if (Handler is null)
             return;
 
-        MainThread.BeginInvokeOnMainThread(async () => await RefreshDataAsync());
+        _ = RefreshDataAsync();
     }
+
+    private async void RefreshButton_Clicked(object? sender, EventArgs e) => await RefreshDataAsync();
 
     private async void ReportsButton_Clicked(object? sender, EventArgs e)
     {
@@ -51,12 +46,17 @@ public partial class DashboardPage : ContentPage
         await Shell.Current.GoToAsync("//goals");
     }
 
+    private int _loadTicket;
+
     private async Task RefreshDataAsync()
     {
+        int ticket = Interlocked.Increment(ref _loadTicket);
         try
         {
             var transactions = await App.Database.GetTransactionsAsync();
             var goals = await App.Database.GetGoalsAsync();
+            if (ticket != _loadTicket)
+                return;
             var now = DateTime.Now;
 
             decimal totalIncome = transactions.Where(t => t.IsIncome).Sum(t => t.Amount);

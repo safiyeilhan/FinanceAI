@@ -1,6 +1,7 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:h="clr-namespace:FinanceAI.Helpers"
     x:Class="FinanceAI.Pages.FinancialReportsPage"
     Title="Raporlar"
     BackgroundColor="{StaticResource AppBackground}"
@@ -13,17 +14,20 @@
     <ScrollView>
         <VerticalStackLayout Padding="20,12,20,32" Spacing="14">
 
-            <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 16" Padding="12,0">
-                <Picker x:Name="PeriodPicker" Title="Dönem seç" TextColor="{StaticResource AppInk}" TitleColor="{StaticResource AppMuted}">
-                    <Picker.Items>
-                        <x:String>Bu ay</x:String>
-                        <x:String>Geçen ay</x:String>
-                        <x:String>Son 3 ay</x:String>
-                        <x:String>Son 6 ay</x:String>
-                        <x:String>Bu yıl</x:String>
-                    </Picker.Items>
-                </Picker>
-            </Border>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 16" Padding="12,0">
+                    <Picker x:Name="PeriodPicker" Title="Dönem seç" TextColor="{StaticResource AppInk}" TitleColor="{StaticResource AppMuted}">
+                        <Picker.Items>
+                            <x:String>Bu ay</x:String>
+                            <x:String>Geçen ay</x:String>
+                            <x:String>Son 3 ay</x:String>
+                            <x:String>Son 6 ay</x:String>
+                            <x:String>Bu yıl</x:String>
+                        </Picker.Items>
+                    </Picker>
+                </Border>
+                <Button Grid.Column="1" Text="Yenile" ImageSource="{h:AppIcon Glyph=&#xE72C;, Tint=#0E7C66}" ContentLayout="Left, 8" BackgroundColor="White" TextColor="{StaticResource AppAccent}" BorderColor="{StaticResource AppLine}" BorderWidth="1" FontAttributes="Bold" CornerRadius="12" HeightRequest="44" Padding="16,0" VerticalOptions="Center" Clicked="RefreshButton_Clicked" />
+            </Grid>
 
             <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 18" Padding="16">
                 <VerticalStackLayout Spacing="6">

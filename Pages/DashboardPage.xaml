@@ -1,16 +1,20 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:h="clr-namespace:FinanceAI.Helpers"
     x:Class="FinanceAI.Pages.DashboardPage"
     BackgroundColor="{StaticResource AppBackground}">
 
     <ScrollView>
         <VerticalStackLayout Padding="20,28,20,32" Spacing="16">
 
-            <VerticalStackLayout Spacing="2">
-                <Label Text="Panel" FontSize="28" FontAttributes="Bold" TextColor="{StaticResource AppInk}" />
-                <Label Text="Bu ayın özeti" FontSize="13" TextColor="{StaticResource AppMuted}" />
-            </VerticalStackLayout>
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                    <Label Text="Panel" FontSize="28" FontAttributes="Bold" TextColor="{StaticResource AppInk}" />
+                    <Label Text="Bu ayın özeti" FontSize="13" TextColor="{StaticResource AppMuted}" />
+                </VerticalStackLayout>
+                <Button Grid.Column="1" Text="Yenile" ImageSource="{h:AppIcon Glyph=&#xE72C;, Tint=#0E7C66}" ContentLayout="Left, 8" BackgroundColor="White" TextColor="{StaticResource AppAccent}" BorderColor="{StaticResource AppLine}" BorderWidth="1" FontAttributes="Bold" CornerRadius="12" HeightRequest="40" Padding="16,0" VerticalOptions="Center" Clicked="RefreshButton_Clicked" />
+            </Grid>
 
             <VerticalStackLayout x:Name="NoticeHost" Spacing="8" />
 
@@ -18,6 +22,8 @@
                 <Button
                     Grid.Column="0"
                     Text="Raporlar"
+                    ImageSource="{h:AppIcon Glyph=&#xE9D2;, Tint=#FFFFFF}"
+                    ContentLayout="Left, 8"
                     BackgroundColor="{StaticResource AppAccent}"
                     TextColor="White"
                     FontAttributes="Bold"
@@ -27,6 +33,8 @@
                 <Button
                     Grid.Column="1"
                     Text="Asistan"
+                    ImageSource="{h:AppIcon Glyph=&#xE8F2;, Tint=#10231C}"
+                    ContentLayout="Left, 8"
                     BackgroundColor="White"
                     TextColor="{StaticResource AppInk}"
                     BorderColor="{StaticResource AppLine}"
@@ -102,6 +110,8 @@
                         <Label x:Name="GoalsSummaryLabel" Text="-" TextColor="{StaticResource AppInk}" />
                         <Button
                             Text="Hedeflere git"
+                            ImageSource="{h:AppIcon Glyph=&#xE734;, Tint=#0E7C66}"
+                            ContentLayout="Left, 8"
                             BackgroundColor="{StaticResource AppAccentSoft}"
                             TextColor="{StaticResource AppAccent}"
                             FontAttributes="Bold"

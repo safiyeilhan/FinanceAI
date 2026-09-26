@@ -29,6 +29,7 @@ public class DatabaseService
             await _database.CreateTableAsync<Transaction>();
             await _database.CreateTableAsync<FinancialGoal>();
             await _database.CreateTableAsync<Budget>();
+            await RepairTransactionPrimaryKeyAsync();
             await PurgeLegacySampleTransactionsAsync();
             _ready = true;
         }
@@ -38,31 +39,67 @@ public class DatabaseService
         }
     }
 
-    private async Task PurgeLegacySampleTransactionsAsync()
+    private async Task RepairTransactionPrimaryKeyAsync()
     {
-        if (Preferences.Default.Get("legacy_sample_transactions_purged", false))
+        // Eski kurulum "Transaction" tablosunu Id'siz açmış. Satırların rowid'i var,
+        // Id kolonu ise NULL. Uygulama Id'yi 0 okuyup silme ve güncellemeyi reddediyor.
+        var columns = await _database.QueryAsync<PragmaColumn>("PRAGMA table_info('Transaction')");
+        bool idIsPrimaryKey = columns.Any(c =>
+            string.Equals(c.name, "Id", StringComparison.OrdinalIgnoreCase) && c.pk > 0);
+        if (idIsPrimaryKey)
             return;
 
-        var columns = await _database.GetTableInfoAsync("Transaction");
-        bool hasSampleFlag = columns.Any(c =>
-            string.Equals(c.Name, "IsSample", StringComparison.OrdinalIgnoreCase));
-
-        if (hasSampleFlag)
+        await _database.ExecuteAsync("BEGIN IMMEDIATE");
+        try
         {
             await _database.ExecuteAsync(
-                """DELETE FROM "Transaction" WHERE "IsSample" = 1 OR "Description" IN (?, ?)""",
-                "Günlük harcama",
-                "Ek gelir");
-        }
-        else
-        {
+                """
+                CREATE TABLE "Transaction_new" (
+                    "Id" integer primary key autoincrement not null,
+                    "Amount" float,
+                    "IsIncome" integer,
+                    "Category" varchar,
+                    "Description" varchar,
+                    "Date" bigint,
+                    "IsSample" integer not null default 0
+                )
+                """);
             await _database.ExecuteAsync(
-                """DELETE FROM "Transaction" WHERE "Description" IN (?, ?)""",
-                "Günlük harcama",
-                "Ek gelir");
+                """
+                INSERT INTO "Transaction_new" ("Amount", "IsIncome", "Category", "Description", "Date", "IsSample")
+                SELECT "Amount", "IsIncome", "Category", "Description", "Date", IFNULL("IsSample", 0)
+                FROM "Transaction"
+                ORDER BY rowid
+                """);
+            await _database.ExecuteAsync("DROP TABLE \"Transaction\"");
+            await _database.ExecuteAsync("ALTER TABLE \"Transaction_new\" RENAME TO \"Transaction\"");
+            await _database.ExecuteAsync("COMMIT");
         }
+        catch
+        {
+            await _database.ExecuteAsync("ROLLBACK");
+            throw;
+        }
+    }
 
-        Preferences.Default.Set("legacy_sample_transactions_purged", true);
+    private sealed class PragmaColumn
+    {
+        public string name { get; set; } = "";
+        public int pk { get; set; }
+    }
+
+    private async Task PurgeLegacySampleTransactionsAsync()
+    {
+        // Önceki sürüm bayrağı bir kez işaretleyip çıkıyordu. Silme eşleşmezse
+        // sahte satırlar kalıyordu; bu yüzden her açılışta yeniden dene.
+        await _database.ExecuteAsync(
+            """
+            DELETE FROM "Transaction"
+            WHERE IFNULL("IsSample", 0) != 0
+               OR TRIM(IFNULL("Description", '')) IN (?, ?)
+            """,
+            "Günlük harcama",
+            "Ek gelir");
     }
 
     public async Task<int> AddTransactionAsync(Transaction transaction)
@@ -83,7 +120,10 @@ public class DatabaseService
     public async Task<List<Transaction>> GetTransactionsAsync()
     {
         await EnsureReadyAsync();
-        return await _database.Table<Transaction>().OrderByDescending(x => x.Date).ToListAsync();
+        return await _database.Table<Transaction>()
+            .Where(x => !x.IsSample)
+            .OrderByDescending(x => x.Date)
+            .ToListAsync();
     }
 
     public async Task<int> DeleteTransactionByIdAsync(int id)

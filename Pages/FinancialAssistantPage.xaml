@@ -2,6 +2,7 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:h="clr-namespace:FinanceAI.Helpers"
     x:Class="FinanceAI.Pages.FinancialAssistantPage"
     Title="Asistan"
     BackgroundColor="{StaticResource AppBackground}"
@@ -13,6 +14,8 @@
 
     <ScrollView>
         <VerticalStackLayout Padding="20,12,20,32" Spacing="14">
+
+            <Button Text="Yenile" ImageSource="{h:AppIcon Glyph=&#xE72C;, Tint=#0E7C66}" ContentLayout="Left, 8" HorizontalOptions="End" BackgroundColor="White" TextColor="{StaticResource AppAccent}" BorderColor="{StaticResource AppLine}" BorderWidth="1" FontAttributes="Bold" CornerRadius="12" HeightRequest="40" Padding="16,0" Clicked="RefreshButton_Clicked" />
 
             <Border BackgroundColor="{StaticResource AppInk}" StrokeThickness="0" StrokeShape="RoundRectangle 18" Padding="16">
                 <VerticalStackLayout Spacing="6">
@@ -68,10 +71,10 @@
 
             <Label Text="Hızlı sorular" FontSize="16" FontAttributes="Bold" TextColor="{StaticResource AppInk}" />
 
-            <Button Text="Bu ay param nereye gitti?" Clicked="WhereDidMyMoneyGo_Clicked" BackgroundColor="White" TextColor="{StaticResource AppInk}" BorderColor="{StaticResource AppLine}" BorderWidth="1" CornerRadius="14" HeightRequest="48" />
-            <Button Text="En çok neye harcıyorum?" Clicked="WhatDoISpendMostOn_Clicked" BackgroundColor="White" TextColor="{StaticResource AppInk}" BorderColor="{StaticResource AppLine}" BorderWidth="1" CornerRadius="14" HeightRequest="48" />
-            <Button Text="Bu ay ne kadar tasarruf ettim?" Clicked="HowMuchSavedThisMonth_Clicked" BackgroundColor="White" TextColor="{StaticResource AppInk}" BorderColor="{StaticResource AppLine}" BorderWidth="1" CornerRadius="14" HeightRequest="48" />
-            <Button Text="Geçen aya göre durumum nasıl?" Clicked="CompareToLastMonth_Clicked" BackgroundColor="White" TextColor="{StaticResource AppInk}" BorderColor="{StaticResource AppLine}" BorderWidth="1" CornerRadius="14" HeightRequest="48" />
+            <Button Text="Bu ay param nereye gitti?" ImageSource="{h:AppIcon Glyph=&#xE721;, Tint=#10231C}" ContentLayout="Left, 10" Clicked="WhereDidMyMoneyGo_Clicked" BackgroundColor="White" TextColor="{StaticResource AppInk}" BorderColor="{StaticResource AppLine}" BorderWidth="1" CornerRadius="14" HeightRequest="48" />
+            <Button Text="En çok neye harcıyorum?" ImageSource="{h:AppIcon Glyph=&#xE9D2;, Tint=#10231C}" ContentLayout="Left, 10" Clicked="WhatDoISpendMostOn_Clicked" BackgroundColor="White" TextColor="{StaticResource AppInk}" BorderColor="{StaticResource AppLine}" BorderWidth="1" CornerRadius="14" HeightRequest="48" />
+            <Button Text="Bu ay ne kadar tasarruf ettim?" ImageSource="{h:AppIcon Glyph=&#xE734;, Tint=#10231C}" ContentLayout="Left, 10" Clicked="HowMuchSavedThisMonth_Clicked" BackgroundColor="White" TextColor="{StaticResource AppInk}" BorderColor="{StaticResource AppLine}" BorderWidth="1" CornerRadius="14" HeightRequest="48" />
+            <Button Text="Geçen aya göre durumum nasıl?" ImageSource="{h:AppIcon Glyph=&#xE787;, Tint=#10231C}" ContentLayout="Left, 10" Clicked="CompareToLastMonth_Clicked" BackgroundColor="White" TextColor="{StaticResource AppInk}" BorderColor="{StaticResource AppLine}" BorderWidth="1" CornerRadius="14" HeightRequest="48" />
 
             <Border BackgroundColor="{StaticResource AppAccentSoft}" StrokeThickness="0" StrokeShape="RoundRectangle 18" Padding="16">
                 <Label x:Name="QuickAnswerLabel" Text="Bir soru seç, yanıt burada görünsün." TextColor="{StaticResource AppInk}" />

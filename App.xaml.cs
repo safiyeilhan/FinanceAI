@@ -10,10 +10,8 @@ public partial class App : Application
 
     public static void RaiseTransactionsChanged()
     {
-        if (MainThread.IsMainThread)
-            TransactionsChanged?.Invoke();
-        else
-            MainThread.BeginInvokeOnMainThread(() => TransactionsChanged?.Invoke());
+        // Tıklama işi bitmeden listeyi yeniden kurmak, ekranın eski haliyle kalmasına yol açıyor.
+        MainThread.BeginInvokeOnMainThread(() => TransactionsChanged?.Invoke());
     }
 
     public App()

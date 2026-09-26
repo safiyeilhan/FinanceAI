@@ -2,6 +2,7 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:h="clr-namespace:FinanceAI.Helpers"
     x:Class="FinanceAI.MainPage"
     BackgroundColor="{StaticResource AppBackground}">
 
@@ -14,8 +15,9 @@
                     <Label x:Name="DateLabel" FontSize="13" TextColor="{StaticResource AppMuted}" />
                 </VerticalStackLayout>
                 <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
-                    <Button Text="Raporlar" BackgroundColor="{StaticResource AppAccentSoft}" TextColor="{StaticResource AppAccent}" FontAttributes="Bold" CornerRadius="12" HeightRequest="40" Padding="16,0" Clicked="Reports_Clicked" />
-                    <Button Text="Asistan" BackgroundColor="White" TextColor="{StaticResource AppInk}" BorderColor="{StaticResource AppLine}" BorderWidth="1" FontAttributes="Bold" CornerRadius="12" HeightRequest="40" Padding="16,0" Clicked="Assistant_Clicked" />
+                    <Button Text="Yenile" ImageSource="{h:AppIcon Glyph=&#xE72C;, Tint=#0E7C66}" ContentLayout="Left, 8" BackgroundColor="White" TextColor="{StaticResource AppAccent}" BorderColor="{StaticResource AppLine}" BorderWidth="1" FontAttributes="Bold" CornerRadius="12" HeightRequest="40" Padding="16,0" Clicked="RefreshButton_Clicked" />
+                    <Button Text="Raporlar" ImageSource="{h:AppIcon Glyph=&#xE9D2;, Tint=#0E7C66}" ContentLayout="Left, 8" BackgroundColor="{StaticResource AppAccentSoft}" TextColor="{StaticResource AppAccent}" FontAttributes="Bold" CornerRadius="12" HeightRequest="40" Padding="16,0" Clicked="Reports_Clicked" />
+                    <Button Text="Asistan" ImageSource="{h:AppIcon Glyph=&#xE8F2;, Tint=#10231C}" ContentLayout="Left, 8" BackgroundColor="White" TextColor="{StaticResource AppInk}" BorderColor="{StaticResource AppLine}" BorderWidth="1" FontAttributes="Bold" CornerRadius="12" HeightRequest="40" Padding="16,0" Clicked="Assistant_Clicked" />
                 </HorizontalStackLayout>
             </Grid>
 
@@ -33,25 +35,21 @@
                     <VerticalStackLayout Spacing="6" VerticalOptions="Center">
                         <Label Text="Gelir" FontSize="12" TextColor="{StaticResource AppMuted}" />
                         <Label x:Name="IncomeLabel" Text="₺0,00" FontSize="22" FontAttributes="Bold" TextColor="{StaticResource AppIncome}" />
-                        <Button Text="Gelir ekle" BackgroundColor="{StaticResource AppAccent}" TextColor="White" FontAttributes="Bold" CornerRadius="10" HeightRequest="36" FontSize="13" Clicked="AddIncome_Clicked" />
+                        <Button Text="Gelir ekle" ImageSource="{h:AppIcon Glyph=&#xE74A;, Tint=#FFFFFF}" ContentLayout="Left, 6" BackgroundColor="{StaticResource AppAccent}" TextColor="White" FontAttributes="Bold" CornerRadius="10" HeightRequest="36" FontSize="13" Clicked="AddIncome_Clicked" />
                     </VerticalStackLayout>
                 </Border>
                 <Border Grid.Column="2" BackgroundColor="White" Stroke="{StaticResource AppLine}" StrokeThickness="1" StrokeShape="RoundRectangle 20" Padding="16">
                     <VerticalStackLayout Spacing="6" VerticalOptions="Center">
                         <Label Text="Gider" FontSize="12" TextColor="{StaticResource AppMuted}" />
                         <Label x:Name="ExpenseLabel" Text="₺0,00" FontSize="22" FontAttributes="Bold" TextColor="{StaticResource AppExpense}" />
-                        <Button Text="Gider ekle" BackgroundColor="White" TextColor="{StaticResource AppExpense}" BorderColor="#F0D4D4" BorderWidth="1" FontAttributes="Bold" CornerRadius="10" HeightRequest="36" FontSize="13" Clicked="AddExpense_Clicked" />
+                        <Button Text="Gider ekle" ImageSource="{h:AppIcon Glyph=&#xE74B;, Tint=#D14343}" ContentLayout="Left, 6" BackgroundColor="White" TextColor="{StaticResource AppExpense}" BorderColor="#F0D4D4" BorderWidth="1" FontAttributes="Bold" CornerRadius="10" HeightRequest="36" FontSize="13" Clicked="AddExpense_Clicked" />
                     </VerticalStackLayout>
                 </Border>
             </Grid>
 
             <Grid ColumnDefinitions="*,Auto">
                 <Label Text="Son işlemler" FontSize="18" FontAttributes="Bold" TextColor="{StaticResource AppInk}" VerticalOptions="Center" />
-                <Label Grid.Column="1" Text="Tüm tablo" FontSize="14" FontAttributes="Bold" TextColor="{StaticResource AppAccent}" VerticalOptions="Center">
-                    <Label.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="AllTransactions_Tapped" />
-                    </Label.GestureRecognizers>
-                </Label>
+                <Button Grid.Column="1" Text="Tüm tablo" ImageSource="{h:AppIcon Glyph=&#xE8FD;, Tint=#0E7C66}" ContentLayout="Left, 6" BackgroundColor="Transparent" TextColor="{StaticResource AppAccent}" FontAttributes="Bold" FontSize="14" CornerRadius="12" HeightRequest="36" Padding="10,0" Clicked="AllTransactions_Clicked" />
             </Grid>
 
             <VerticalStackLayout x:Name="TransactionsLayout" Spacing="0" />

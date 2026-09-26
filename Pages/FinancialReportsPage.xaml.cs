@@ -20,11 +20,29 @@ public partial class FinancialReportsPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        App.TransactionsChanged -= OnTransactionsChanged;
+        App.TransactionsChanged += OnTransactionsChanged;
         if (PeriodPicker.SelectedIndex < 0)
             PeriodPicker.SelectedIndex = 0;
         else
             await RefreshAsync();
     }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        App.TransactionsChanged -= OnTransactionsChanged;
+    }
+
+    private void OnTransactionsChanged()
+    {
+        if (Handler is null)
+            return;
+
+        _ = RefreshAsync();
+    }
+
+    private async void RefreshButton_Clicked(object? sender, EventArgs e) => await RefreshAsync();
 
     private async void PeriodPicker_SelectedIndexChanged(object? sender, EventArgs e)
     {
@@ -45,8 +63,11 @@ public partial class FinancialReportsPage : ContentPage
         };
     }
 
+    private int _loadTicket;
+
     private async Task RefreshAsync()
     {
+        int ticket = Interlocked.Increment(ref _loadTicket);
         if (PeriodPicker.SelectedIndex < 0)
             return;
 
@@ -55,6 +76,8 @@ public partial class FinancialReportsPage : ContentPage
             var now = DateTime.Now;
             var (from, toExclusive) = GetRange(PeriodPicker.SelectedIndex, now);
             var transactions = await App.Database.GetTransactionsAsync();
+            if (ticket != _loadTicket)
+                return;
             var selected = transactions.Where(t => t.Date >= from && t.Date < toExclusive).ToList();
 
             decimal totalIncome = selected.Where(t => t.IsIncome).Sum(t => t.Amount);

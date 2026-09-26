@@ -34,9 +34,11 @@ public partial class AddTransactionPage : ContentPage
 
         IncomeButton.BackgroundColor = isIncome ? Palette.Accent : Colors.White;
         IncomeButton.TextColor = isIncome ? Colors.White : Palette.Ink;
+        AppIcons.Apply(IncomeButton, Glyph.Up, isIncome ? Colors.White : Palette.Income);
 
         ExpenseButton.BackgroundColor = isIncome ? Colors.White : Palette.Expense;
         ExpenseButton.TextColor = isIncome ? Palette.Ink : Colors.White;
+        AppIcons.Apply(ExpenseButton, Glyph.Down, isIncome ? Palette.Expense : Colors.White);
 
         var selected = CategoryPicker.SelectedItem?.ToString();
         CategoryPicker.Items.Clear();
