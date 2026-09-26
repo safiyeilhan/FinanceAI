@@ -16,7 +16,4 @@ public class Transaction
     public string Description { get; set; } = string.Empty;
 
     public DateTime Date { get; set; }
-
-    // Mark sample/test rows so we can treat them differently if needed
-    public bool IsSample { get; set; }
 }

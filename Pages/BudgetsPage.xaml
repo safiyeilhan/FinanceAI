@@ -1,26 +1,39 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FinanceAI.Pages.BudgetsPage"
-             BackgroundColor="#F6F7FB">
+             BackgroundColor="{StaticResource AppBackground}">
 
-    <ContentPage.Content>
-        <ScrollView>
-            <VerticalStackLayout Padding="16,20" Spacing="12">
-                <Label Text="Bütçeler" FontSize="24" FontAttributes="Bold" />
+    <ScrollView>
+        <VerticalStackLayout Padding="24,22,24,28" Spacing="14">
 
-                <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="12">
-                    <VerticalStackLayout Spacing="6">
-                        <Label Text="Özet" FontAttributes="Bold" />
-                        <Label x:Name="BudgetsSummaryLabel" Text="-" />
-                    </VerticalStackLayout>
-                </Border>
-
-                <Button x:Name="AddBudgetButton" Text="Yeni Bütçe Ekle" BackgroundColor="#1976D2" TextColor="White" CornerRadius="8" HeightRequest="44" />
-
-                <StackLayout x:Name="BudgetsListLayout" Spacing="10" />
-
+            <VerticalStackLayout Spacing="2">
+                <Label Text="Bütçeler" FontSize="26" FontAttributes="Bold" TextColor="{StaticResource AppInk}" />
+                <Label x:Name="BudgetsSummaryLabel" Text="Aylık harcama limiti" FontSize="13" TextColor="{StaticResource AppMuted}" />
             </VerticalStackLayout>
-        </ScrollView>
-    </ContentPage.Content>
+
+            <Border BackgroundColor="White" Stroke="{StaticResource AppLine}" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="14">
+                <VerticalStackLayout Spacing="10">
+                    <Label x:Name="FormTitleLabel" Text="Yeni bütçe" FontAttributes="Bold" FontSize="15" TextColor="{StaticResource AppInk}" />
+                    <Label x:Name="FormErrorLabel" IsVisible="False" FontSize="13" TextColor="{StaticResource AppExpense}" />
+                    <Grid ColumnDefinitions="*,*,*,Auto,Auto" ColumnSpacing="8">
+                        <Border Grid.Column="0" BackgroundColor="{StaticResource AppBackground}" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="10,0">
+                            <Picker x:Name="CategoryPicker" Title="Kategori" TextColor="{StaticResource AppInk}" TitleColor="{StaticResource AppMuted}" />
+                        </Border>
+                        <Border Grid.Column="1" BackgroundColor="{StaticResource AppBackground}" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="10,0">
+                            <Entry x:Name="CustomCategoryEntry" Placeholder="veya yeni ad" PlaceholderColor="#A3B5AE" TextColor="{StaticResource AppInk}" BackgroundColor="Transparent" />
+                        </Border>
+                        <Border Grid.Column="2" BackgroundColor="{StaticResource AppBackground}" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="10,0">
+                            <Entry x:Name="LimitEntry" Placeholder="Aylık limit" Keyboard="Numeric" PlaceholderColor="#A3B5AE" TextColor="{StaticResource AppInk}" BackgroundColor="Transparent" />
+                        </Border>
+                        <Button x:Name="AddBudgetButton" Grid.Column="3" Text="Ekle" BackgroundColor="{StaticResource AppAccent}" TextColor="White" FontAttributes="Bold" CornerRadius="12" HeightRequest="44" WidthRequest="110" Clicked="AddBudgetButton_Clicked" />
+                        <Button x:Name="CancelBudgetButton" Grid.Column="4" Text="Vazgeç" IsVisible="False" BackgroundColor="White" TextColor="{StaticResource AppInk}" BorderColor="{StaticResource AppLine}" BorderWidth="1" CornerRadius="12" HeightRequest="44" WidthRequest="96" Clicked="CancelBudgetButton_Clicked" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <VerticalStackLayout x:Name="BudgetsListLayout" />
+
+        </VerticalStackLayout>
+    </ScrollView>
 
 </ContentPage>

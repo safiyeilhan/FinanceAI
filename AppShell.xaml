@@ -4,11 +4,48 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:FinanceAI"
-    Title="FinanceAI">
+    xmlns:pages="clr-namespace:FinanceAI.Pages"
+    Title="FinanceAI"
+    FlyoutBehavior="Disabled"
+    Shell.TabBarBackgroundColor="White"
+    Shell.TabBarForegroundColor="#0E7C66"
+    Shell.TabBarTitleColor="#0E7C66"
+    Shell.TabBarUnselectedColor="#7D9188"
+    Shell.BackgroundColor="#F3F6F4"
+    Shell.ForegroundColor="#10231C"
+    Shell.TitleColor="#10231C"
+    Shell.NavBarHasShadow="False">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <TabBar>
+        <ShellContent
+            Title="Özet"
+            Route="home"
+            Shell.NavBarIsVisible="False"
+            ContentTemplate="{DataTemplate local:MainPage}" />
+
+        <ShellContent
+            Title="İşlemler"
+            Route="transactions"
+            Shell.NavBarIsVisible="False"
+            ContentTemplate="{DataTemplate local:TransactionsPage}" />
+
+        <ShellContent
+            Title="Panel"
+            Route="dashboard"
+            Shell.NavBarIsVisible="False"
+            ContentTemplate="{DataTemplate pages:DashboardPage}" />
+
+        <ShellContent
+            Title="Bütçe"
+            Route="budgets"
+            Shell.NavBarIsVisible="False"
+            ContentTemplate="{DataTemplate pages:BudgetsPage}" />
+
+        <ShellContent
+            Title="Hedefler"
+            Route="goals"
+            Shell.NavBarIsVisible="False"
+            ContentTemplate="{DataTemplate pages:FinancialGoalsPage}" />
+    </TabBar>
 
 </Shell>

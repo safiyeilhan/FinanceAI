@@ -1,193 +1,150 @@
 <?xml version="1.0" encoding="utf-8" ?>
-
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="FinanceAI.AddTransactionPage"
-    BackgroundColor="#F6F7FB">
+    Title="Yeni işlem"
+    BackgroundColor="{StaticResource AppBackground}"
+    Shell.NavBarIsVisible="True"
+    Shell.BackgroundColor="#F3F6F4"
+    Shell.TitleColor="#10231C"
+    Shell.ForegroundColor="#10231C"
+    Shell.NavBarHasShadow="False">
 
     <ScrollView>
-        <VerticalStackLayout
-            Padding="24,45,24,30"
-            Spacing="20">
+        <VerticalStackLayout Padding="20,12,20,28" Spacing="18">
 
-            <!-- HEADER -->
-            <Grid ColumnDefinitions="Auto,*">
-
-                <Button
-                    Grid.Column="0"
-                    Text="‹"
-                    FontSize="32"
-                    BackgroundColor="Transparent"
-                    TextColor="#171717"
-                    WidthRequest="45"
-                    HeightRequest="45"
-                    Padding="0"
-                    Clicked="BackButton_Clicked" />
-
-                <Label
-                    Grid.Column="1"
-                    Text="Yeni İşlem"
-                    FontSize="27"
-                    FontAttributes="Bold"
-                    TextColor="#171717"
-                    VerticalOptions="Center" />
-
-            </Grid>
-
-            <!-- INCOME / EXPENSE -->
             <Border
                 BackgroundColor="White"
                 StrokeThickness="0"
                 StrokeShape="RoundRectangle 18"
                 Padding="6">
-
                 <Grid ColumnDefinitions="*,*">
-
                     <Button
                         x:Name="IncomeButton"
                         Grid.Column="0"
                         Text="Gelir"
-                        BackgroundColor="#171717"
+                        BackgroundColor="{StaticResource AppAccent}"
                         TextColor="White"
+                        FontAttributes="Bold"
                         CornerRadius="14"
-                        HeightRequest="48"
+                        HeightRequest="46"
                         Clicked="IncomeButton_Clicked" />
-
                     <Button
                         x:Name="ExpenseButton"
                         Grid.Column="1"
                         Text="Gider"
                         BackgroundColor="White"
-                        TextColor="#171717"
+                        TextColor="{StaticResource AppInk}"
+                        FontAttributes="Bold"
                         CornerRadius="14"
-                        HeightRequest="48"
+                        HeightRequest="46"
                         Clicked="ExpenseButton_Clicked" />
-
                 </Grid>
-
             </Border>
 
-            <!-- AMOUNT -->
+            <Label
+                x:Name="TypeHintLabel"
+                Text="Gelir bakiyeyi artırır."
+                FontSize="13"
+                TextColor="{StaticResource AppMuted}" />
+
+            <Label
+                x:Name="ErrorLabel"
+                IsVisible="False"
+                FontSize="13"
+                TextColor="{StaticResource AppExpense}" />
+
             <VerticalStackLayout Spacing="8">
-
-                <Label
-                    Text="Tutar"
-                    FontSize="15"
-                    FontAttributes="Bold"
-                    TextColor="#444444" />
-
+                <Label Text="Tutar" FontSize="14" FontAttributes="Bold" TextColor="{StaticResource AppInk}" />
                 <Border
                     BackgroundColor="White"
+                    Stroke="{StaticResource AppLine}"
                     StrokeThickness="1"
-                    Stroke="#E5E5E5"
                     StrokeShape="RoundRectangle 16"
-                    Padding="16,0">
-
+                    Padding="16,4">
                     <Grid ColumnDefinitions="Auto,*">
-
                         <Label
                             Text="₺"
-                            FontSize="24"
+                            FontSize="26"
                             FontAttributes="Bold"
-                            TextColor="#171717"
+                            TextColor="{StaticResource AppInk}"
                             VerticalOptions="Center" />
-
                         <Entry
                             x:Name="AmountEntry"
                             Grid.Column="1"
                             Placeholder="0,00"
                             Keyboard="Numeric"
-                            FontSize="24"
-                            TextColor="#171717"
-                            PlaceholderColor="#AAAAAA"
+                            FontSize="26"
+                            TextColor="{StaticResource AppInk}"
+                            PlaceholderColor="#A3B5AE"
                             BackgroundColor="Transparent" />
-
                     </Grid>
-
                 </Border>
-
             </VerticalStackLayout>
 
-            <!-- CATEGORY -->
             <VerticalStackLayout Spacing="8">
-
-                <Label
-                    Text="Kategori"
-                    FontSize="15"
-                    FontAttributes="Bold"
-                    TextColor="#444444" />
-
+                <Label Text="Kategori" FontSize="14" FontAttributes="Bold" TextColor="{StaticResource AppInk}" />
                 <Border
                     BackgroundColor="White"
+                    Stroke="{StaticResource AppLine}"
                     StrokeThickness="1"
-                    Stroke="#E5E5E5"
                     StrokeShape="RoundRectangle 16"
                     Padding="12,0">
-
                     <Picker
                         x:Name="CategoryPicker"
-                        Title="Kategori seçin"
+                        Title="Kategori seç"
                         FontSize="16"
-                        TextColor="#171717">
-
-                        <Picker.Items>
-                            <x:String>Maaş</x:String>
-                            <x:String>Alışveriş</x:String>
-                            <x:String>Yemek</x:String>
-                            <x:String>Ulaşım</x:String>
-                            <x:String>Eğitim</x:String>
-                            <x:String>Fatura</x:String>
-                            <x:String>Abonelik</x:String>
-                            <x:String>Sağlık</x:String>
-                            <x:String>Diğer</x:String>
-                        </Picker.Items>
-
-                    </Picker>
-
+                        TextColor="{StaticResource AppInk}"
+                        TitleColor="{StaticResource AppMuted}" />
                 </Border>
-
             </VerticalStackLayout>
 
-            <!-- DESCRIPTION -->
             <VerticalStackLayout Spacing="8">
-
-                <Label
-                    Text="Açıklama"
-                    FontSize="15"
-                    FontAttributes="Bold"
-                    TextColor="#444444" />
-
+                <Label Text="Tarih" FontSize="14" FontAttributes="Bold" TextColor="{StaticResource AppInk}" />
                 <Border
                     BackgroundColor="White"
+                    Stroke="{StaticResource AppLine}"
                     StrokeThickness="1"
-                    Stroke="#E5E5E5"
                     StrokeShape="RoundRectangle 16"
-                    Padding="14">
-
-                    <Editor
-                        x:Name="DescriptionEditor"
-                        Placeholder="Örneğin: Market alışverişi"
-                        PlaceholderColor="#AAAAAA"
-                        TextColor="#171717"
-                        FontSize="15"
-                        HeightRequest="100"
-                        AutoSize="TextChanges" />
-
+                    Padding="12,0">
+                    <DatePicker
+                        x:Name="DatePicker"
+                        Format="dd MMMM yyyy"
+                        FontSize="16"
+                        TextColor="{StaticResource AppInk}" />
                 </Border>
-
             </VerticalStackLayout>
 
-            <!-- SAVE -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Açıklama" FontSize="14" FontAttributes="Bold" TextColor="{StaticResource AppInk}" />
+                <Border
+                    BackgroundColor="White"
+                    Stroke="{StaticResource AppLine}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="14,8">
+                    <Editor
+                        x:Name="DescriptionEditor"
+                        Placeholder="İsteğe bağlı not"
+                        PlaceholderColor="#A3B5AE"
+                        TextColor="{StaticResource AppInk}"
+                        FontSize="15"
+                        HeightRequest="90"
+                        AutoSize="Disabled"
+                        BackgroundColor="Transparent" />
+                </Border>
+            </VerticalStackLayout>
+
             <Button
-                Text="İşlemi Kaydet"
-                BackgroundColor="#171717"
+                x:Name="SaveButton"
+                Text="Kaydet"
+                BackgroundColor="{StaticResource AppInk}"
                 TextColor="White"
                 FontSize="16"
                 FontAttributes="Bold"
                 CornerRadius="16"
-                HeightRequest="56"
-                Margin="0,10,0,0"
+                HeightRequest="54"
                 Clicked="SaveButton_Clicked" />
 
         </VerticalStackLayout>

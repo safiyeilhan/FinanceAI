@@ -6,30 +6,32 @@ public partial class App : Application
 {
     public static DatabaseService Database { get; private set; } = null!;
 
-    // Raised when transactions change (added/deleted) so pages can refresh UI
     public static event Action? TransactionsChanged;
 
-    // External callers should use this to notify subscribers.
     public static void RaiseTransactionsChanged()
     {
-        TransactionsChanged?.Invoke();
+        if (MainThread.IsMainThread)
+            TransactionsChanged?.Invoke();
+        else
+            MainThread.BeginInvokeOnMainThread(() => TransactionsChanged?.Invoke());
     }
 
     public App()
     {
+        UserAppTheme = AppTheme.Light;
         InitializeComponent();
-
         Database = new DatabaseService();
-        InitializeDatabase();
-    }
-
-    private static async void InitializeDatabase()
-    {
-        await Database.InitializeAsync();
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        return new Window(new AppShell());
+        return new Window(new AppShell())
+        {
+            Title = "FinanceAI",
+            Width = 1200,
+            Height = 800,
+            MinimumWidth = 980,
+            MinimumHeight = 640
+        };
     }
 }

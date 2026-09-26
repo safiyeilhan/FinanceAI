@@ -1,5 +1,5 @@
+using FinanceAI.Helpers;
 using FinanceAI.Models;
-using Microsoft.Maui.Graphics;
 
 namespace FinanceAI.Pages;
 
@@ -18,173 +18,200 @@ public partial class FinancialAssistantPage : ContentPage
 
     private async Task LoadMetricsAsync()
     {
-        List<Transaction> transactions = await App.Database.GetTransactionsAsync() ?? new();
-
-        // prepare shared insights list
-        List<string> insights = new();
-
-        // Load budgets and compute usage per budget for this month
-        var budgets = await App.Database.GetBudgetsAsync();
-        var now = DateTime.Now;
-        int year = now.Year;
-        int month = now.Month;
-
-        BudgetsListLayout.Children.Clear();
-        int exceededCount = 0;
-        double highestUsage = 0;
-        string highestCategory = "-";
-
-        foreach (var b in budgets)
+        try
         {
-            int by = b.Year == 0 ? year : b.Year;
-            int bm = b.Month == 0 ? month : b.Month;
-            var spent = transactions.Where(t => !t.IsIncome && t.Category == b.Category && t.Date.Year == by && t.Date.Month == bm).Sum(t => t.Amount);
-            var remaining = b.MonthlyLimit - spent;
-            var usagePct = b.MonthlyLimit > 0 ? (double)(spent / b.MonthlyLimit) * 100.0 : 0.0;
+            var transactions = await App.Database.GetTransactionsAsync();
+            var budgets = await App.Database.GetBudgetsAsync();
+            var now = DateTime.Now;
 
-            if (usagePct > highestUsage)
+            var thisMonth = transactions
+                .Where(t => t.Date.Year == now.Year && t.Date.Month == now.Month)
+                .ToList();
+            decimal income = thisMonth.Where(t => t.IsIncome).Sum(t => t.Amount);
+            decimal expense = thisMonth.Where(t => !t.IsIncome).Sum(t => t.Amount);
+            decimal balance = income - expense;
+            decimal savingsRate = income > 0 ? balance / income : 0;
+
+            TotalIncomeLabel.Text = FinanceFormat.Money(income);
+            TotalExpenseLabel.Text = FinanceFormat.Money(expense);
+            BalanceLabel.Text = FinanceFormat.Money(balance);
+            BalanceLabel.TextColor = balance >= 0 ? Palette.Income : Palette.Expense;
+            SavingsRateLabel.Text = $"%{Math.Round(savingsRate * 100):0}";
+
+            var previous = now.AddMonths(-1);
+            decimal previousExpense = transactions
+                .Where(t => !t.IsIncome && t.Date.Year == previous.Year && t.Date.Month == previous.Month)
+                .Sum(t => t.Amount);
+
+            string changeText = DescribeExpenseChange(expense, previousExpense);
+            SummaryLabel.Text = $"Bu ay {FinanceFormat.Money(income)} gelir, {FinanceFormat.Money(expense)} gider. {changeText}";
+
+            var monthGroups = thisMonth
+                .Where(t => !t.IsIncome)
+                .GroupBy(t => string.IsNullOrWhiteSpace(t.Category) ? "Diğer" : t.Category)
+                .Select(g => new { Category = g.Key, Amount = g.Sum(x => x.Amount) })
+                .OrderByDescending(x => x.Amount)
+                .ToList();
+
+            HighCategoryLabel.Text = monthGroups.Count == 0
+                ? "Bu ay henüz gider yok."
+                : $"Bu ay en çok: {monthGroups[0].Category} ({FinanceFormat.Money(monthGroups[0].Amount)})";
+
+            var insights = new List<string>();
+            if (monthGroups.Count > 0 && expense > 0)
             {
-                highestUsage = usagePct;
-                highestCategory = b.Category;
+                decimal share = monthGroups[0].Amount / expense * 100m;
+                insights.Add($"{monthGroups[0].Category}, bu ayki giderlerin %{share:0} kadarı.");
             }
-            if (usagePct >= 100) exceededCount++;
 
-            // small card
-            var card = new Border { BackgroundColor = Colors.White, StrokeThickness = 0, Padding = 10 };
-            var vs = new VerticalStackLayout { Spacing = 4 };
-            vs.Add(new Label { Text = b.Category, FontAttributes = FontAttributes.Bold });
-            vs.Add(new Label { Text = $"₺{b.MonthlyLimit:N2} bütçe · ₺{spent:N2} harcandı · ₺{remaining:N2} kaldı" });
-            vs.Add(new Label { Text = $"%{usagePct:F0} kullanım" });
-            var progress = new ProgressBar { Progress = (float)Math.Min(usagePct / 100.0, 2.0), HeightRequest = 8, BackgroundColor = Microsoft.Maui.Graphics.Color.FromArgb("#EEEEEE") };
-            vs.Add(progress);
+            if (income == 0 && expense == 0)
+                insights.Add("Bu ay henüz işlem yok.");
+            else if (savingsRate >= 0.25m)
+                insights.Add("Gelirin dörtte birinden fazlası duruyor.");
+            else if (balance < 0)
+                insights.Add("Bu ay giderler gelirleri geçti.");
+            else if (income > 0)
+                insights.Add("Tasarruf payı düşük. Büyük kalemleri bütçeyle sınırlamak işe yarar.");
 
-            card.Content = vs;
-            BudgetsListLayout.Children.Add(card);
+            BudgetsListLayout.Children.Clear();
+            int exceeded = 0;
+            double highestUsage = 0;
+            string highestCategory = "-";
 
-            // add insight messages for over/borderline budgets
-            if (usagePct >= 100)
+            if (budgets.Count == 0)
             {
-                insights.Add($"{b.Category} bütçeni aştın.");
+                BudgetsSummaryLabel.Text = "Tanımlı bütçe yok. Bütçe sekmesinden ekleyebilirsin.";
             }
-            else if (usagePct >= 80)
+            else
             {
-                insights.Add($"{b.Category} bütçenin %{usagePct:F0} kadarını kullandın (yaklaşılıyor).");
+                foreach (var budget in budgets)
+                {
+                    int year = budget.Year == 0 ? now.Year : budget.Year;
+                    int month = budget.Month == 0 ? now.Month : budget.Month;
+                    decimal spent = transactions
+                        .Where(t => !t.IsIncome
+                            && string.Equals(t.Category, budget.Category, StringComparison.CurrentCultureIgnoreCase)
+                            && t.Date.Year == year
+                            && t.Date.Month == month)
+                        .Sum(t => t.Amount);
+                    decimal remaining = budget.MonthlyLimit - spent;
+                    double usage = budget.MonthlyLimit > 0 ? (double)(spent / budget.MonthlyLimit) * 100.0 : 0;
+
+                    if (usage > highestUsage)
+                    {
+                        highestUsage = usage;
+                        highestCategory = budget.Category;
+                    }
+
+                    if (usage >= 100)
+                    {
+                        exceeded++;
+                        insights.Add($"{budget.Category} bütçesi aşıldı.");
+                    }
+                    else if (usage >= 80)
+                    {
+                        insights.Add($"{budget.Category} bütçesinin %{usage:0} kadarı kullanıldı.");
+                    }
+
+                    BudgetsListLayout.Children.Add(new Label
+                    {
+                        Text = $"{budget.Category}: {FinanceFormat.Money(spent)} / {FinanceFormat.Money(budget.MonthlyLimit)} · {(remaining < 0 ? FinanceFormat.Money(Math.Abs(remaining)) + " aşıldı" : FinanceFormat.Money(remaining) + " kaldı")}",
+                        TextColor = usage >= 100 ? Palette.Expense : Palette.Ink
+                    });
+                }
+
+                BudgetsSummaryLabel.Text = $"{budgets.Count} bütçe · {exceeded} aşıldı · en dolu {highestCategory} (%{highestUsage:0})";
             }
+
+            InsightsLabel.Text = string.Join(Environment.NewLine, insights);
         }
-
-        BudgetsSummaryLabel.Text = $"Toplam bütçe: {budgets.Count} | Aşılan: {exceededCount} | En yüksek kullanım: {highestCategory} ({highestUsage:F0}%)";
-
-        var totalIncome = transactions.Where(t => t.IsIncome).Sum(t => t.Amount);
-        var totalExpense = transactions.Where(t => !t.IsIncome).Sum(t => t.Amount);
-        var balance = totalIncome - totalExpense;
-        var savingsRate = totalIncome > 0 ? (totalIncome - totalExpense) / totalIncome : 0m;
-
-        TotalIncomeLabel.Text = $"₺{totalIncome:N2}";
-        TotalExpenseLabel.Text = $"₺{totalExpense:N2}";
-        BalanceLabel.Text = $"₺{balance:N2}";
-        SavingsRateLabel.Text = $"{savingsRate:P0}";
-
-        // Top spending category
-        var topCategory = transactions.Where(t => !t.IsIncome)
-            .GroupBy(t => t.Category)
-            .Select(g => new { Cat = g.Key, Sum = g.Sum(x => x.Amount) })
-            .OrderByDescending(x => x.Sum)
-            .FirstOrDefault();
-
-        HighCategoryLabel.Text = topCategory != null ? $"En çok harcama: {topCategory.Cat} (₺{topCategory.Sum:N2})" : "Harcama kaydı yok.";
-
-        // This month vs last month
-        now = DateTime.Now;
-        var thisMonthExpenses = transactions.Where(t => !t.IsIncome && t.Date.Year == now.Year && t.Date.Month == now.Month).Sum(t => t.Amount);
-        var prev = now.AddMonths(-1);
-        var prevMonthExpenses = transactions.Where(t => !t.IsIncome && t.Date.Year == prev.Year && t.Date.Month == prev.Month).Sum(t => t.Amount);
-
-        string monthlyChangeText;
-        if (prevMonthExpenses == 0 && thisMonthExpenses == 0)
-            monthlyChangeText = "Geçen aya göre değişim yok.";
-        else if (prevMonthExpenses == 0)
-            monthlyChangeText = "Geçen ay veri yok; bu ay harcama mevcut.";
-        else
+        catch (Exception ex)
         {
-            var change = ((thisMonthExpenses - prevMonthExpenses) / prevMonthExpenses) * 100m;
-            monthlyChangeText = $"Giderler geçen aya göre {(change >= 0 ? "arttı" : "azaldı")} %{Math.Abs(change):F1} (₺{(thisMonthExpenses - prevMonthExpenses):N2})";
+            SummaryLabel.Text = "Veriler okunamadı.";
+            InsightsLabel.Text = ex.Message;
         }
+    }
 
-        SummaryLabel.Text = $"Bu ay: ₺{thisMonthExpenses:N2}. {monthlyChangeText}";
+    private static string DescribeExpenseChange(decimal current, decimal previous)
+    {
+        if (previous == 0 && current == 0)
+            return "Geçen aya göre harcama değişmedi.";
+        if (previous == 0)
+            return "Geçen ay gider kaydı yok.";
 
-        // Insights: simple rules (continue adding to existing insights list)
-        if (topCategory != null)
-            insights.Add($"Bu ay harcamalarının en büyük kısmı {topCategory.Cat} kategorisinde.");
-        if (savingsRate > 0.25m)
-            insights.Add($"Gelirlerinin %{(savingsRate * 100):F0} kadarını tasarruf etmiş durumdasın.");
-        else if (savingsRate <= 0)
-            insights.Add("Gelirlerine göre tasarrufun yok; harcamalarını gözden geçir.");
-
-        if (thisMonthExpenses > prevMonthExpenses)
-            insights.Add($"Bu ay giderlerin geçen aya göre %{(prevMonthExpenses == 0 ? 100 : Math.Abs(((thisMonthExpenses - prevMonthExpenses) / (prevMonthExpenses == 0 ? 1 : prevMonthExpenses) * 100))):F0} arttı.");
-
-        InsightsLabel.Text = string.Join("\n", insights);
+        decimal change = (current - previous) / previous * 100m;
+        string direction = change >= 0 ? "arttı" : "azaldı";
+        return $"Giderler geçen aya göre %{Math.Abs(change):0} {direction}.";
     }
 
     private async void WhereDidMyMoneyGo_Clicked(object? sender, EventArgs e)
     {
         var transactions = await App.Database.GetTransactionsAsync();
-        var thisMonth = DateTime.Now;
-        var groups = transactions.Where(t => !t.IsIncome && t.Date.Year == thisMonth.Year && t.Date.Month == thisMonth.Month)
-            .GroupBy(t => t.Category)
-            .Select(g => new { Cat = g.Key, Sum = g.Sum(x => x.Amount) })
-            .OrderByDescending(x => x.Sum)
+        var now = DateTime.Now;
+        var groups = transactions
+            .Where(t => !t.IsIncome && t.Date.Year == now.Year && t.Date.Month == now.Month)
+            .GroupBy(t => string.IsNullOrWhiteSpace(t.Category) ? "Diğer" : t.Category)
+            .Select(g => new { Category = g.Key, Amount = g.Sum(x => x.Amount) })
+            .OrderByDescending(x => x.Amount)
             .ToList();
 
-        if (groups.Count == 0)
-        {
-            QuickAnswerLabel.Text = "Bu ay için gider verisi yok.";
-            return;
-        }
-
-        QuickAnswerLabel.Text = string.Join("\n", groups.Select(g => $"{g.Cat}: ₺{g.Sum:N2}"));
+        QuickAnswerLabel.Text = groups.Count == 0
+            ? "Bu ay için gider yok."
+            : string.Join(Environment.NewLine, groups.Select(g => $"{g.Category}: {FinanceFormat.Money(g.Amount)}"));
     }
 
     private async void WhatDoISpendMostOn_Clicked(object? sender, EventArgs e)
     {
         var transactions = await App.Database.GetTransactionsAsync();
-        var top = transactions.Where(t => !t.IsIncome)
-            .GroupBy(t => t.Category)
-            .Select(g => new { Cat = g.Key, Sum = g.Sum(x => x.Amount) })
-            .OrderByDescending(x => x.Sum)
-            .FirstOrDefault();
+        var now = DateTime.Now;
 
-        QuickAnswerLabel.Text = top != null ? $"En çok harcadığın kategori: {top.Cat} (₺{top.Sum:N2})" : "Harcama kaydı yok.";
+        string Describe(IEnumerable<Transaction> source, string title)
+        {
+            var top = source
+                .Where(t => !t.IsIncome)
+                .GroupBy(t => string.IsNullOrWhiteSpace(t.Category) ? "Diğer" : t.Category)
+                .Select(g => new { Category = g.Key, Amount = g.Sum(x => x.Amount) })
+                .OrderByDescending(x => x.Amount)
+                .FirstOrDefault();
+
+            return top == null
+                ? $"{title}: gider yok."
+                : $"{title}: {top.Category} ({FinanceFormat.Money(top.Amount)})";
+        }
+
+        var month = transactions.Where(t => t.Date.Year == now.Year && t.Date.Month == now.Month);
+        QuickAnswerLabel.Text = Describe(month, "Bu ay") + Environment.NewLine + Describe(transactions, "Tüm zamanlar");
     }
 
     private async void HowMuchSavedThisMonth_Clicked(object? sender, EventArgs e)
     {
         var transactions = await App.Database.GetTransactionsAsync();
         var now = DateTime.Now;
-        var thisMonth = transactions.Where(t => t.Date.Year == now.Year && t.Date.Month == now.Month);
-        var income = thisMonth.Where(t => t.IsIncome).Sum(t => t.Amount);
-        var expense = thisMonth.Where(t => !t.IsIncome).Sum(t => t.Amount);
-        var saved = income - expense;
+        var month = transactions.Where(t => t.Date.Year == now.Year && t.Date.Month == now.Month).ToList();
+        decimal income = month.Where(t => t.IsIncome).Sum(t => t.Amount);
+        decimal expense = month.Where(t => !t.IsIncome).Sum(t => t.Amount);
+        decimal saved = income - expense;
+        decimal rate = income > 0 ? saved / income * 100m : 0;
 
-        QuickAnswerLabel.Text = $"Bu ay tasarruf: ₺{saved:N2} ({(income > 0 ? (saved / income * 100) : 0):F0}%)";
+        QuickAnswerLabel.Text = income == 0 && expense == 0
+            ? "Bu ay işlem yok."
+            : $"Bu ay {FinanceFormat.Money(saved)} kaldı. Tasarruf oranı %{rate:0}.";
     }
 
     private async void CompareToLastMonth_Clicked(object? sender, EventArgs e)
     {
         var transactions = await App.Database.GetTransactionsAsync();
         var now = DateTime.Now;
-        var thisMonthExpense = transactions.Where(t => !t.IsIncome && t.Date.Year == now.Year && t.Date.Month == now.Month).Sum(t => t.Amount);
-        var prev = now.AddMonths(-1);
-        var prevMonthExpense = transactions.Where(t => !t.IsIncome && t.Date.Year == prev.Year && t.Date.Month == prev.Month).Sum(t => t.Amount);
+        var previous = now.AddMonths(-1);
 
-        if (prevMonthExpense == 0 && thisMonthExpense == 0)
-            QuickAnswerLabel.Text = "Geçen aya göre değişim yok.";
-        else if (prevMonthExpense == 0)
-            QuickAnswerLabel.Text = "Geçen ay veri yok; bu ay harcama mevcut.";
-        else
-        {
-            var change = ((thisMonthExpense - prevMonthExpense) / prevMonthExpense) * 100m;
-            QuickAnswerLabel.Text = $"Giderler {(change >= 0 ? "arttı" : "azaldı")} %{Math.Abs(change):F1} (₺{(thisMonthExpense - prevMonthExpense):N2})";
-        }
+        decimal thisExpense = transactions.Where(t => !t.IsIncome && t.Date.Year == now.Year && t.Date.Month == now.Month).Sum(t => t.Amount);
+        decimal previousExpense = transactions.Where(t => !t.IsIncome && t.Date.Year == previous.Year && t.Date.Month == previous.Month).Sum(t => t.Amount);
+        decimal thisIncome = transactions.Where(t => t.IsIncome && t.Date.Year == now.Year && t.Date.Month == now.Month).Sum(t => t.Amount);
+        decimal previousIncome = transactions.Where(t => t.IsIncome && t.Date.Year == previous.Year && t.Date.Month == previous.Month).Sum(t => t.Amount);
+
+        QuickAnswerLabel.Text =
+            DescribeExpenseChange(thisExpense, previousExpense)
+            + Environment.NewLine
+            + $"Gelir bu ay {FinanceFormat.Money(thisIncome)}, geçen ay {FinanceFormat.Money(previousIncome)}.";
     }
 }

@@ -6,127 +6,163 @@ namespace FinanceAI.Data;
 public class DatabaseService
 {
     private readonly SQLiteAsyncConnection _database;
+    private readonly SemaphoreSlim _gate = new(1, 1);
+    private bool _ready;
 
     public DatabaseService()
     {
-        string databasePath = Path.Combine(
-            FileSystem.AppDataDirectory,
-            "FinanceAI.db3");
-
+        string databasePath = Path.Combine(FileSystem.AppDataDirectory, "FinanceAI.db3");
         _database = new SQLiteAsyncConnection(databasePath);
     }
 
-    public async Task InitializeAsync()
+    private async Task EnsureReadyAsync()
     {
-        await _database.CreateTableAsync<Transaction>();
-        await _database.CreateTableAsync<FinanceAI.Models.FinancialGoal>();
-        await _database.CreateTableAsync<FinanceAI.Models.Budget>();
+        if (_ready)
+            return;
+
+        await _gate.WaitAsync();
+        try
+        {
+            if (_ready)
+                return;
+
+            await _database.CreateTableAsync<Transaction>();
+            await _database.CreateTableAsync<FinancialGoal>();
+            await _database.CreateTableAsync<Budget>();
+            await PurgeLegacySampleTransactionsAsync();
+            _ready = true;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    private async Task PurgeLegacySampleTransactionsAsync()
+    {
+        if (Preferences.Default.Get("legacy_sample_transactions_purged", false))
+            return;
+
+        var columns = await _database.GetTableInfoAsync("Transaction");
+        bool hasSampleFlag = columns.Any(c =>
+            string.Equals(c.Name, "IsSample", StringComparison.OrdinalIgnoreCase));
+
+        if (hasSampleFlag)
+        {
+            await _database.ExecuteAsync(
+                """DELETE FROM "Transaction" WHERE "IsSample" = 1 OR "Description" IN (?, ?)""",
+                "Günlük harcama",
+                "Ek gelir");
+        }
+        else
+        {
+            await _database.ExecuteAsync(
+                """DELETE FROM "Transaction" WHERE "Description" IN (?, ?)""",
+                "Günlük harcama",
+                "Ek gelir");
+        }
+
+        Preferences.Default.Set("legacy_sample_transactions_purged", true);
     }
 
     public async Task<int> AddTransactionAsync(Transaction transaction)
     {
+        await EnsureReadyAsync();
         return await _database.InsertAsync(transaction);
+    }
+
+    public async Task<int> UpdateTransactionAsync(Transaction transaction)
+    {
+        await EnsureReadyAsync();
+        if (transaction.Id <= 0)
+            return 0;
+
+        return await _database.UpdateAsync(transaction);
     }
 
     public async Task<List<Transaction>> GetTransactionsAsync()
     {
-        return await _database
-            .Table<Transaction>()
-            .OrderByDescending(x => x.Date)
-            .ToListAsync();
-    }
-
-    public async Task<int> DeleteTransactionAsync(Transaction transaction)
-    {
-        if (transaction == null) return 0;
-        // Use ORM delete to avoid SQL identifier conflicts (e.g. reserved word 'Transaction')
-        return await _database.DeleteAsync(transaction);
+        await EnsureReadyAsync();
+        return await _database.Table<Transaction>().OrderByDescending(x => x.Date).ToListAsync();
     }
 
     public async Task<int> DeleteTransactionByIdAsync(int id)
     {
-        // Use SQLite-net API to delete by primary key rather than hard-coding the table name.
-        // This avoids mismatches between model/table naming (Transaction vs Transactions).
+        await EnsureReadyAsync();
+        if (id <= 0)
+            return 0;
+
         try
         {
-            return await _database.DeleteAsync<Transaction>(id);
+            int deleted = await _database.DeleteAsync<Transaction>(id);
+            if (deleted > 0)
+                return deleted;
         }
         catch
         {
-            // Fallback for older sqlite-net versions: delete by passing a temporary instance.
-            var temp = new Transaction { Id = id };
-            return await _database.DeleteAsync(temp);
+            // Some sqlite-net builds reject the generic delete. The statement below uses the same table.
         }
+
+        return await _database.ExecuteAsync("DELETE FROM \"Transaction\" WHERE \"Id\" = ?", id);
     }
 
-    // FinancialGoal methods
-    public async Task<int> AddGoalAsync(Models.FinancialGoal goal)
+    public async Task<int> AddGoalAsync(FinancialGoal goal)
     {
+        await EnsureReadyAsync();
         return await _database.InsertAsync(goal);
     }
 
-    public async Task<List<Models.FinancialGoal>> GetGoalsAsync()
+    public async Task<List<FinancialGoal>> GetGoalsAsync()
     {
-        return await _database.Table<Models.FinancialGoal>().OrderBy(x => x.TargetDate).ToListAsync();
+        await EnsureReadyAsync();
+        return await _database.Table<FinancialGoal>().OrderBy(x => x.TargetDate).ToListAsync();
     }
 
-    public async Task<int> UpdateGoalAsync(Models.FinancialGoal goal)
+    public async Task<int> UpdateGoalAsync(FinancialGoal goal)
     {
+        await EnsureReadyAsync();
+        if (goal.Id <= 0)
+            return 0;
+
         return await _database.UpdateAsync(goal);
     }
 
-    public async Task<int> DeleteGoalAsync(Models.FinancialGoal goal)
+    public async Task<int> DeleteGoalAsync(FinancialGoal goal)
     {
+        await EnsureReadyAsync();
+        if (goal.Id <= 0)
+            return 0;
+
         return await _database.DeleteAsync(goal);
     }
 
-    // Budget methods
-    public async Task<int> AddBudgetAsync(Models.Budget budget)
+    public async Task<int> AddBudgetAsync(Budget budget)
     {
+        await EnsureReadyAsync();
         return await _database.InsertAsync(budget);
     }
 
-    public async Task<List<Models.Budget>> GetBudgetsAsync()
+    public async Task<List<Budget>> GetBudgetsAsync()
     {
-        return await _database.Table<Models.Budget>().OrderBy(x => x.Category).ToListAsync();
+        await EnsureReadyAsync();
+        return await _database.Table<Budget>().OrderBy(x => x.Category).ToListAsync();
     }
 
-    public async Task<int> UpdateBudgetAsync(Models.Budget budget)
+    public async Task<int> UpdateBudgetAsync(Budget budget)
     {
+        await EnsureReadyAsync();
+        if (budget.Id <= 0)
+            return 0;
+
         return await _database.UpdateAsync(budget);
     }
 
-    public async Task<int> DeleteBudgetAsync(Models.Budget budget)
+    public async Task<int> DeleteBudgetAsync(Budget budget)
     {
+        await EnsureReadyAsync();
+        if (budget.Id <= 0)
+            return 0;
+
         return await _database.DeleteAsync(budget);
     }
-
-    // Diagnostics: return PRAGMA table_info results mapped to a POCO
-    public async Task<List<TableInfoRow>> GetTableInfoAsync(string tableName)
-    {
-        var sql = $"PRAGMA table_info(\"{tableName}\");";
-        var rows = await _database.QueryAsync<TableInfoRow>(sql);
-        return rows;
-    }
-
-    // Diagnostics: return Transaction rows (maps to Transaction model)
-    public async Task<List<Transaction>> GetRawTableRowsAsync(string tableName)
-    {
-        // Use sqlite-net's QueryAsync to map rows to Transaction; this avoids low-level SQLitePCL usage
-        var sql = $"SELECT * FROM \"{tableName}\";";
-        var rows = await _database.QueryAsync<Transaction>(sql);
-        return rows;
-    }
-
-    public class TableInfoRow
-    {
-        public int Cid { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Type { get; set; } = string.Empty;
-        public int Notnull { get; set; }
-        [Column("dflt_value")]
-        public string DfltValue { get; set; } = string.Empty;
-        public int Pk { get; set; }
-    }
-
 }

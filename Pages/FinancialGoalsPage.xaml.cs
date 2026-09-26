@@ -1,14 +1,17 @@
+using FinanceAI.Helpers;
 using FinanceAI.Models;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Graphics;
 
 namespace FinanceAI.Pages;
 
 public partial class FinancialGoalsPage : ContentPage
 {
+    private FinancialGoal? _editing;
+
     public FinancialGoalsPage()
     {
         InitializeComponent();
+        GoalDatePicker.MinimumDate = new DateTime(2000, 1, 1);
+        GoalDatePicker.Date = DateTime.Today.AddMonths(3);
     }
 
     protected override async void OnAppearing()
@@ -19,100 +22,159 @@ public partial class FinancialGoalsPage : ContentPage
 
     private async Task LoadGoalsAsync()
     {
-        GoalsLayout.Children.Clear();
-        var goals = await App.Database.GetGoalsAsync();
-
-        foreach (var g in goals)
+        try
         {
-            GoalsLayout.Children.Add(CreateGoalCard(g));
+            var goals = await App.Database.GetGoalsAsync();
+            var rows = new List<IReadOnlyList<View>>();
+
+            foreach (var goal in goals)
+            {
+                double progress = goal.TargetAmount > 0
+                    ? Math.Clamp((double)(goal.CurrentAmount / goal.TargetAmount), 0, 1)
+                    : 0;
+                bool done = goal.TargetAmount > 0 && goal.CurrentAmount >= goal.TargetAmount;
+                var captured = goal;
+                rows.Add(
+                [
+                    DataTable.Cell(captured.Name, bold: true),
+                    DataTable.Cell(FinanceFormat.Money(captured.CurrentAmount), Palette.Income, bold: true),
+                    DataTable.Cell(FinanceFormat.Money(captured.TargetAmount)),
+                    DataTable.Cell(done ? "Tamam" : $"%{progress * 100:0}", done ? Palette.Income : Palette.Ink, bold: true, TextAlignment.End),
+                    DataTable.Cell(FinanceFormat.Day(captured.TargetDate), Palette.Muted),
+                    DataTable.Actions(() => BeginEdit(captured), () => DeleteGoalAsync(captured))
+                ]);
+            }
+
+            GoalsLayout.Children.Clear();
+            GoalsLayout.Children.Add(DataTable.Create(
+            [
+                new TableColumn("Hedef", GridLength.Star),
+                new TableColumn("Biriken", new GridLength(120)),
+                new TableColumn("Hedef tutar", new GridLength(120)),
+                new TableColumn("İlerleme", new GridLength(90), TextAlignment.End),
+                new TableColumn("Tarih", new GridLength(120)),
+                new TableColumn("İşlem", new GridLength(130), TextAlignment.End)
+            ], rows, "Henüz hedef yok."));
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlertAsync("Veri hatası", "Hedefler okunamadı. " + ex.Message, "Tamam");
         }
     }
 
-    private Border CreateGoalCard(FinancialGoal g)
+    private Task BeginEdit(FinancialGoal goal)
     {
-        double progress = g.TargetAmount > 0 ? (double)(g.CurrentAmount / g.TargetAmount) : 0.0;
-        if (progress > 1) progress = 1;
+        _editing = goal;
+        FormTitleLabel.Text = $"{goal.Name} hedefini güncelle";
+        SaveGoalButton.Text = "Değişiklikleri kaydet";
+        CancelGoalButton.IsVisible = true;
+        GoalNameEntry.Text = goal.Name;
+        GoalTargetEntry.Text = goal.TargetAmount.ToString("0.##", FinanceFormat.Culture);
+        GoalCurrentEntry.Text = goal.CurrentAmount.ToString("0.##", FinanceFormat.Culture);
+        GoalNoteEditor.Text = goal.Description;
+        var minimum = GoalDatePicker.MinimumDate ?? new DateTime(2000, 1, 1);
+        GoalDatePicker.Date = goal.TargetDate.Date < minimum ? minimum : goal.TargetDate.Date;
+        return Task.CompletedTask;
+    }
 
-        var nameLabel = new Label { Text = g.Name, FontAttributes = FontAttributes.Bold, FontSize = 16 };
-        var amountsLabel = new Label { Text = $"₺{g.CurrentAmount:N2} / ₺{g.TargetAmount:N2}", FontSize = 14 };
-        var dateLabel = new Label { Text = $"Hedef Tarihi: {g.TargetDate:dd.MM.yyyy}", FontSize = 12, TextColor = Color.FromArgb("#666") };
+    private void CancelGoalButton_Clicked(object? sender, EventArgs e) => ClearForm();
 
-        var progressBar = new ProgressBar { Progress = progress, HeightRequest = 8 };
+    private void ClearForm()
+    {
+        _editing = null;
+        FormTitleLabel.Text = "Yeni hedef";
+        SaveGoalButton.Text = "Hedef oluştur";
+        CancelGoalButton.IsVisible = false;
+        GoalNameEntry.Text = "";
+        GoalTargetEntry.Text = "";
+        GoalCurrentEntry.Text = "";
+        GoalNoteEditor.Text = "";
+        GoalDatePicker.Date = DateTime.Today.AddMonths(3);
+    }
 
-        var addButton = new Button { Text = "Para Ekle", BackgroundColor = Color.FromArgb("#1976D2"), TextColor = Colors.White };
-        addButton.Clicked += async (s, e) =>
+    private async Task DeleteGoalAsync(FinancialGoal goal)
+    {
+        bool ok = await DisplayAlertAsync("Hedefi sil", $"\"{goal.Name}\" silinecek.", "Sil", "Vazgeç");
+        if (!ok)
+            return;
+
+        int deleted = await App.Database.DeleteGoalAsync(goal);
+        if (deleted <= 0)
         {
-            string? input = await DisplayPromptAsync("Para Ekle", "Eklenecek miktarı girin:", keyboard: Keyboard.Numeric);
-            if (decimal.TryParse(input, out decimal amount) && amount > 0)
-            {
-                g.CurrentAmount += amount;
-                await App.Database.UpdateGoalAsync(g);
-                await LoadGoalsAsync();
-            }
-        };
-
-        var deleteButton = new Button { Text = "Sil", BackgroundColor = Colors.Transparent, TextColor = Color.FromArgb("#C62828") };
-        deleteButton.Clicked += async (s, e) =>
-        {
-            bool ok = await DisplayAlertAsync("Onay", $"'{g.Name}' hedefini silmek istediğinize emin misiniz?", "Evet", "Hayır");
-            if (ok)
-            {
-                await App.Database.DeleteGoalAsync(g);
-                await LoadGoalsAsync();
-            }
-        };
-
-        var buttons = new HorizontalStackLayout { Spacing = 8, Children = { addButton, deleteButton } };
-
-        var card = new Border
-        {
-            BackgroundColor = Colors.White,
-            StrokeThickness = 0,
-            StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(12) },
-            Padding = 12,
-            Content = new VerticalStackLayout
-            {
-                Spacing = 6,
-                Children = { nameLabel, amountsLabel, progressBar, dateLabel, buttons }
-            }
-        };
-
-        // Visual completed state
-        if (g.CurrentAmount >= g.TargetAmount)
-        {
-            var doneLabel = new Label { Text = "Tamamlandı", TextColor = Color.FromArgb("#2E7D32"), FontAttributes = FontAttributes.Bold };
-            (card.Content as VerticalStackLayout)!.Children.Insert(1, doneLabel);
+            await DisplayAlertAsync("Silinemedi", "Hedef bulunamadı.", "Tamam");
+            return;
         }
 
-        return card;
+        if (_editing?.Id == goal.Id)
+            ClearForm();
+
+        await LoadGoalsAsync();
     }
 
     private async void AddGoalButton_Clicked(object? sender, EventArgs e)
     {
-        string? name = await DisplayPromptAsync("Yeni Hedef", "Hedef adı:");
-        if (string.IsNullOrWhiteSpace(name)) return;
-
-        string? targetStr = await DisplayPromptAsync("Hedef Tutarı", "Hedef tutarı (örn. 30000):", keyboard: Keyboard.Numeric);
-        if (!decimal.TryParse(targetStr, out decimal target) || target <= 0) return;
-
-        string? desc = await DisplayPromptAsync("Açıklama (isteğe bağlı)", "Açıklama (isteğe bağlı):");
-
-        string? dateStr = await DisplayPromptAsync("Hedef Tarihi", "Hedef tarihi (gg.aa.yyyy):");
-        DateTime targetDate = DateTime.Now.AddMonths(1);
-        if (!string.IsNullOrWhiteSpace(dateStr) && DateTime.TryParse(dateStr, out var parsed))
-            targetDate = parsed;
-
-        var goal = new FinancialGoal
+        string name = GoalNameEntry.Text?.Trim() ?? "";
+        if (name.Length == 0)
         {
-            Name = name,
-            TargetAmount = target,
-            CurrentAmount = 0,
-            Description = desc,
-            TargetDate = targetDate,
-            CreatedDate = DateTime.Now
-        };
+            await DisplayAlertAsync("Hedef adı", "Hedefe bir ad ver.", "Tamam");
+            return;
+        }
 
-        await App.Database.AddGoalAsync(goal);
+        if (!MoneyParser.TryParse(GoalTargetEntry.Text, out decimal target) || target <= 0)
+        {
+            await DisplayAlertAsync("Geçersiz tutar", "Sıfırdan büyük bir hedef tutarı gir.", "Tamam");
+            return;
+        }
+
+        decimal current = 0;
+        if (!string.IsNullOrWhiteSpace(GoalCurrentEntry.Text))
+        {
+            if (!MoneyParser.TryParse(GoalCurrentEntry.Text, out current) || current < 0)
+            {
+                await DisplayAlertAsync("Geçersiz tutar", "Biriken tutar sıfır veya daha büyük olmalı.", "Tamam");
+                return;
+            }
+        }
+
+        var date = (GoalDatePicker.Date ?? DateTime.Today.AddMonths(3)).Date;
+        string? note = string.IsNullOrWhiteSpace(GoalNoteEditor.Text) ? null : GoalNoteEditor.Text.Trim();
+
+        try
+        {
+            if (_editing != null)
+            {
+                _editing.Name = name;
+                _editing.TargetAmount = target;
+                _editing.CurrentAmount = current;
+                _editing.Description = note;
+                _editing.TargetDate = date;
+                int updated = await App.Database.UpdateGoalAsync(_editing);
+                if (updated <= 0)
+                {
+                    await DisplayAlertAsync("Kaydedilemedi", "Hedef bulunamadı.", "Tamam");
+                    return;
+                }
+            }
+            else
+            {
+                await App.Database.AddGoalAsync(new FinancialGoal
+                {
+                    Name = name,
+                    TargetAmount = target,
+                    CurrentAmount = current,
+                    Description = note,
+                    TargetDate = date,
+                    CreatedDate = DateTime.Now
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlertAsync("Kayıt hatası", "Hedef kaydedilemedi. " + ex.Message, "Tamam");
+            return;
+        }
+
+        ClearForm();
         await LoadGoalsAsync();
     }
 }

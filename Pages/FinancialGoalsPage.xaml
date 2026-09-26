@@ -2,19 +2,47 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="FinanceAI.Pages.FinancialGoalsPage"
-    BackgroundColor="#F6F7FB">
+    BackgroundColor="{StaticResource AppBackground}">
 
-    <ContentPage.Content>
-        <ScrollView>
-            <VerticalStackLayout Padding="16,24" Spacing="12">
-                <Label Text="Finansal Hedefler" FontSize="24" FontAttributes="Bold" TextColor="#171717" />
+    <ScrollView>
+        <VerticalStackLayout Padding="24,22,24,28" Spacing="14">
 
-                <Button x:Name="AddGoalButton" Text="Yeni Hedef Oluştur" Clicked="AddGoalButton_Clicked" BackgroundColor="#1976D2" TextColor="White" />
-
-                <VerticalStackLayout x:Name="GoalsLayout" Spacing="12" />
-
+            <VerticalStackLayout Spacing="2">
+                <Label Text="Hedefler" FontSize="26" FontAttributes="Bold" TextColor="{StaticResource AppInk}" />
+                <Label Text="Tablodaki Düzenle ile adı, tutarı, birikeni ve tarihi güncelle." FontSize="13" TextColor="{StaticResource AppMuted}" />
             </VerticalStackLayout>
-        </ScrollView>
-    </ContentPage.Content>
+
+            <Border BackgroundColor="White" Stroke="{StaticResource AppLine}" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="14">
+                <VerticalStackLayout Spacing="10">
+                    <Label x:Name="FormTitleLabel" Text="Yeni hedef" FontAttributes="Bold" FontSize="15" TextColor="{StaticResource AppInk}" />
+                    <Label x:Name="FormErrorLabel" IsVisible="False" FontSize="13" TextColor="{StaticResource AppExpense}" />
+                    <Grid ColumnDefinitions="1.4*,*,*,*" ColumnSpacing="8">
+                        <Border BackgroundColor="{StaticResource AppBackground}" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="10,0">
+                            <Entry x:Name="GoalNameEntry" Placeholder="Hedef adı" PlaceholderColor="#A3B5AE" TextColor="{StaticResource AppInk}" BackgroundColor="Transparent" />
+                        </Border>
+                        <Border Grid.Column="1" BackgroundColor="{StaticResource AppBackground}" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="10,0">
+                            <Entry x:Name="GoalTargetEntry" Placeholder="Hedef tutar" Keyboard="Numeric" PlaceholderColor="#A3B5AE" TextColor="{StaticResource AppInk}" BackgroundColor="Transparent" />
+                        </Border>
+                        <Border Grid.Column="2" BackgroundColor="{StaticResource AppBackground}" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="10,0">
+                            <Entry x:Name="GoalCurrentEntry" Placeholder="Biriken tutar" Keyboard="Numeric" PlaceholderColor="#A3B5AE" TextColor="{StaticResource AppInk}" BackgroundColor="Transparent" />
+                        </Border>
+                        <Border Grid.Column="3" BackgroundColor="{StaticResource AppBackground}" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="10,0">
+                            <DatePicker x:Name="GoalDatePicker" Format="dd.MM.yyyy" TextColor="{StaticResource AppInk}" />
+                        </Border>
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                        <Border BackgroundColor="{StaticResource AppBackground}" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="10,0">
+                            <Entry x:Name="GoalNoteEditor" Placeholder="Kısa not (isteğe bağlı)" PlaceholderColor="#A3B5AE" TextColor="{StaticResource AppInk}" BackgroundColor="Transparent" />
+                        </Border>
+                        <Button x:Name="SaveGoalButton" Grid.Column="1" Text="Hedef oluştur" BackgroundColor="{StaticResource AppAccent}" TextColor="White" FontAttributes="Bold" CornerRadius="12" HeightRequest="44" Padding="16,0" Clicked="AddGoalButton_Clicked" />
+                        <Button x:Name="CancelGoalButton" Grid.Column="2" Text="Vazgeç" IsVisible="False" BackgroundColor="White" TextColor="{StaticResource AppInk}" BorderColor="{StaticResource AppLine}" BorderWidth="1" CornerRadius="12" HeightRequest="44" Padding="16,0" Clicked="CancelGoalButton_Clicked" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <VerticalStackLayout x:Name="GoalsLayout" />
+
+        </VerticalStackLayout>
+    </ScrollView>
 
 </ContentPage>
